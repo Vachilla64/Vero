@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  accounts  Account[]
+  reports   Report[]
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  nuban        String        @unique
+  bankCode     String        @default("000")
+  status       String        @default("active") // active, suspended
+  createdAt    DateTime      @default(now())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  reports      Report[]
+  
+  @@index([nuban])
+  @@index([userId])
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  amount     Float
+  createdAt  DateTime @default(now())
+  senderId   String?  // Can be null if seeded history
+  accountId  String
+  account    Account  @relation(fields: [accountId], references: [id])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reason     String
+  penalty    Float    @default(0)
+  createdAt  DateTime @default(now())
+  userId     String   // The reporter
+  user       User     @relation(fields: [userId], references: [id])
+  accountId  String   // The reported account
+  account    Account  @relation(fields: [accountId], references: [id])
+
+  @@unique([userId, accountId])
+}
