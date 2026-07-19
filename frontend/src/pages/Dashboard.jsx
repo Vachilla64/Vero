@@ -248,16 +248,16 @@ export default function Dashboard() {
                 <div className="text-[13px] font-bold text-trust-green bg-trust-green/10 px-2 py-1 rounded-lg">100</div>
               </div>
               
-              <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000021"); setSelectedBank(BANKS.find(b => b.code === "000") || BANKS[0]); }}>
+              <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(BANKS.find(b => b.code === "058") || BANKS[0]); }}>
                 <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-red text-base relative">
-                  M
+                  E
                   <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-red border-2 border-white"></div>
                 </div>
                 <div className="flex-1">
-                  <div className="text-[15px] font-bold text-ink">Mule User</div>
-                  <div className="text-[12.5px] text-secondary font-medium">Bank · ••••0021</div>
+                  <div className="text-[15px] font-bold text-ink">Ella Stores</div>
+                  <div className="text-[12.5px] text-secondary font-medium">GTBank · ••••3210</div>
                 </div>
-                <div className="text-[13px] font-bold text-trust-red bg-trust-red/10 px-2 py-1 rounded-lg">10</div>
+                <div className="text-[13px] font-bold text-trust-red bg-trust-red/10 px-2 py-1 rounded-lg">15</div>
               </div>
             </div>
           </div>
