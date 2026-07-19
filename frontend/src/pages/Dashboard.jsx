@@ -179,6 +179,30 @@ export default function Dashboard() {
                     </p>
                   </div>
 
+                  {/* Breakdown & Times Checked */}
+                  {trustData.breakdown && trustData.breakdown.length > 0 && (
+                    <div className="mb-6 text-left w-full border border-gray-100 rounded-xl overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                        Why this score
+                      </div>
+                      <div className="bg-white divide-y divide-gray-50">
+                        {trustData.breakdown.map((item, i) => (
+                          <div key={i} className="px-4 py-3 flex justify-between items-center">
+                            <span className="text-xs text-ink font-medium">{item.reason}</span>
+                            <span className={`text-xs font-bold ${item.points > 0 ? 'text-green-600' : item.points < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                              {item.points > 0 ? '+' : ''}{item.points}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {trustData.timesChecked !== undefined && (
+                    <p className="text-xs text-gray-400 mb-6">
+                      Checked {trustData.timesChecked + 1} times on Vero
+                    </p>
+                  )}
+
                   {/* High Risk Interventions */}
                   {trustData.score < 30 ? (
                     <div className="space-y-4 w-full">

@@ -6,26 +6,32 @@ const prisma = new PrismaClient();
  * @param {Object} account - The recipient Account record from Prisma.
  * @param {String} senderId - The ID of the User sending the money.
  * @param {Number} amount - The transfer amount in NGN.
- * @returns {Object} { score: Number, flags: Array<String> }
+ * @returns {Object} { score: Number, flags: Array<String>, breakdown: Array<Object> }
  */
 async function calculateTrustScore(account, senderId, amount) {
   let score = 100;
   const flags = new Set();
+  const breakdown = [];
 
   // 1. Unknown Account — not in the network yet. Honest moderate caution, not a false alarm.
   if (!account) {
-    return { score: 55, flags: ['unknown_account'] };
+    breakdown.push({ signal: 'unknown_account', points: -45, reason: 'No prior history on network' });
+    return { score: 55, flags: ['unknown_account'], breakdown };
   }
 
   // 2. Suspended Account Check
   if (account.status === 'suspended') {
-    return { score: 0, flags: ['suspended_account', 'critical_risk'] };
+    breakdown.push({ signal: 'suspended_account', points: -100, reason: 'Account suspended for policy violations' });
+    return { score: 0, flags: ['suspended_account', 'critical_risk'], breakdown };
   }
 
   // 3. Self-Transfer Bypass
   if (account.userId === senderId) {
-    return { score: 100, flags: [] };
+    breakdown.push({ signal: 'self_transfer', points: 0, reason: 'Transfer to own account' });
+    return { score: 100, flags: [], breakdown };
   }
+
+  breakdown.push({ signal: 'base_score', points: 100, reason: 'Starting trust score' });
 
   // Calculate Account Age (in days)
   const ageInMs = Date.now() - new Date(account.createdAt).getTime();
@@ -35,6 +41,7 @@ async function calculateTrustScore(account, senderId, amount) {
   if (ageInDays < 7) {
     score -= 40;
     flags.add('new_account');
+    breakdown.push({ signal: 'new_account', points: -40, reason: 'Account is less than 7 days old' });
   }
 
   // 5. Heavy Reporting Penalty
@@ -46,9 +53,11 @@ async function calculateTrustScore(account, senderId, amount) {
     if (reportCount > 2) {
       score -= 50;
       flags.add('heavily_reported');
+      breakdown.push({ signal: 'heavily_reported', points: -50, reason: 'Account has 3 or more user reports' });
     } else {
       score -= 20;
       flags.add('flagged_by_users');
+      breakdown.push({ signal: 'flagged_by_users', points: -20, reason: 'Account has been flagged by users' });
     }
   }
 
@@ -80,6 +89,7 @@ async function calculateTrustScore(account, senderId, amount) {
     if (amount > 10000 && amount > avgAmount * 3) {
       score -= 15;
       flags.add('velocity_anomaly');
+      breakdown.push({ signal: 'velocity_anomaly', points: -15, reason: 'Unusually high transfer amount compared to history' });
     }
   }
 
@@ -87,11 +97,13 @@ async function calculateTrustScore(account, senderId, amount) {
   if (amount > 1000000) {
     score -= 10;
     flags.add('high_value');
+    breakdown.push({ signal: 'high_value', points: -10, reason: 'High absolute transfer value' });
   }
 
   // Union Bank Tag
   if (account.bankCode === '032') {
     flags.add('verified_institution');
+    breakdown.push({ signal: 'verified_institution', points: 0, reason: 'Verified partner institution' });
   }
 
   // Critical Risk Floor
@@ -100,11 +112,16 @@ async function calculateTrustScore(account, senderId, amount) {
   }
 
   // Ensure score is clamped perfectly between 0 and 100
-  score = Math.max(0, Math.min(100, Math.round(score)));
+  const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+  if (clampedScore !== score) {
+    breakdown.push({ signal: 'score_clamped', points: clampedScore - score, reason: 'Score adjusted to fit 0-100 range' });
+  }
+  score = clampedScore;
 
   return {
     score,
-    flags: Array.from(flags)
+    flags: Array.from(flags),
+    breakdown
   };
 }
 

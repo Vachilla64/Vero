@@ -51,12 +51,14 @@ router.post('/', authenticateJWT, async (req, res) => {
     let score = 0;
     let flags = [];
     let explanation = '';
+    let breakdown = [];
 
     // 1. Format gate (hard): must be exactly 10 digits
     if (!/^\d{10}$/.test(nuban)) {
       score = 0;
       flags = ['invalid_format'];
       explanation = 'That is not a valid 10-digit account number.';
+      breakdown = [{ signal: 'invalid_format', points: -100, reason: 'Invalid NUBAN format' }];
     } else {
       // 2. Fetch Account from Postgres
       const account = await prisma.account.findUnique({
@@ -67,11 +69,13 @@ router.post('/', authenticateJWT, async (req, res) => {
       const result = await calculateTrustScore(account, senderId, parseFloat(amount));
       score = result.score;
       flags = result.flags;
+      breakdown = result.breakdown;
 
       // 4. Checksum is a soft signal only — we can't know every institution's
       // bank code, so a failed checksum informs, it never blocks.
       if (!validateNuban(nuban)) {
         flags = [...flags, 'checksum_unverified'];
+        breakdown.push({ signal: 'checksum_unverified', points: 0, reason: 'Could not verify check digit' });
       }
 
       // 5. Generate AI Explanation
@@ -91,10 +95,14 @@ router.post('/', authenticateJWT, async (req, res) => {
     });
 
     // 6. Return payload exactly as expected by the UI
+    const timesChecked = await prisma.verification.count({ where: { nuban } });
+
     res.status(200).json({
       score,
       flags,
-      explanation
+      explanation,
+      breakdown,
+      timesChecked
     });
 
   } catch (error) {
