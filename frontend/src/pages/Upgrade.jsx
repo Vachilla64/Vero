@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import { Check, Zap, Sparkles, Award } from "lucide-react";
 
 import PageWrapper from "../components/PageWrapper";
 
@@ -10,6 +10,7 @@ export default function Upgrade() {
   const [upgrading, setUpgrading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleUpgrade = async () => {
     setError("");
@@ -27,116 +28,88 @@ export default function Upgrade() {
   };
 
   const proFeatures = [
-    "Unlimited NUBAN verifications",
-    "Priority Gemini AI explanation models",
-    "Real-time crowdsourced reporting lookups",
-    "Access to API keys for B2B integrations",
-    "Priority email and developer support"
+    "Unlimited daily lookups",
+    "Priority fraud alerts",
+    "Full lookup history & export",
+    "Ad-free, priority support"
   ];
 
   return (
-    <PageWrapper className="px-4 py-4 md:py-8">
-      {/* Title */}
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-extrabold text-ink tracking-tight">Vero Pro</h2>
-        <p className="text-gray-500 mt-2 max-w-md mx-auto">
-          Ensure transaction safety at scale. Never worry about daily search limits again.
-        </p>
-      </div>
-
-      {success || user?.isPremium ? (
-        /* Success / Active State */
-        <div className="bg-surface rounded-2xl shadow-sm border border-gray-100 p-8 text-center max-w-md mx-auto animate-fade-in">
-          <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-md animate-bounce">
-            <Award size={36} />
-          </div>
-          <h3 className="text-2xl font-bold text-ink mb-2">Vero Pro Active</h3>
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            Congratulations! Your account has been upgraded to the Pro tier. You now have unlimited daily NUBAN verification checks.
-          </p>
-          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-amber-800 text-sm font-semibold flex items-center justify-center gap-2">
-            <Sparkles size={16} /> Unlimited lookups unlocked
-          </div>
+    <PageWrapper className="bg-canvas min-h-screen font-poppins">
+      <div className="flex flex-col flex-1 px-[26px] pb-[26px] pt-4 max-w-md mx-auto w-full min-h-[calc(100vh-60px)]">
+        
+        <div className="flex items-center justify-start mb-[18px]">
+          <Link to="/settings" className="text-secondary text-[15px] font-semibold no-underline">‹ Back</Link>
         </div>
-      ) : (
-        /* Tier Pricing Table */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-2xl mx-auto">
-          {/* Free Tier */}
-          <div className="bg-surface rounded-2xl border border-gray-200 p-6 flex flex-col justify-between">
-            <div>
-              <div className="mb-4">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Free Plan</h3>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-3xl font-bold text-ink">₦0</span>
-                  <span className="text-gray-400 text-xs">/ month</span>
-                </div>
-              </div>
-              <ul className="space-y-3 pt-6 border-t border-gray-100 text-sm text-gray-600">
-                <li className="flex items-center gap-2">
-                  <Check size={16} className="text-gray-400 shrink-0" />
-                  <span>3 checks per day limit</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={16} className="text-gray-400 shrink-0" />
-                  <span>Mod-10 Checksum validations</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={16} className="text-gray-400 shrink-0" />
-                  <span>Basic Risk explanations</span>
-                </li>
-              </ul>
-            </div>
-            <button
-              disabled
-              className="w-full mt-8 bg-gray-100 text-gray-400 font-semibold py-3 rounded-lg text-sm cursor-not-allowed"
+
+        {success || user?.isPremium ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center pb-12 animate-fade-in">
+            <div className="w-[80px] h-[80px] rounded-full bg-[rgba(255,195,0,0.15)] flex items-center justify-center text-[40px] mb-6">⚡</div>
+            <h3 className="text-[24px] font-bold text-ink mb-2">Vero Pro Active</h3>
+            <p className="text-secondary text-[14px] font-medium leading-relaxed max-w-[260px]">
+              You now have unlimited daily verifications and priority alerts.
+            </p>
+            <button 
+              onClick={() => navigate('/')}
+              className="mt-10 bg-surface border border-gray-200 text-ink font-bold py-3 px-8 rounded-[14px] shadow-sm text-[14px]"
             >
-              Current Plan
+              Back to Dashboard
             </button>
           </div>
-
-          {/* Pro Tier */}
-          <div className="bg-surface rounded-2xl border-2 border-ink p-6 flex flex-col justify-between shadow-md relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-ink text-surface px-4 py-1 rounded-bl-xl text-xs font-bold tracking-widest uppercase flex items-center gap-1">
-              <Zap size={10} className="fill-surface animate-pulse" /> Recommended
-            </div>
-
-            <div>
-              <div className="mb-4">
-                <h3 className="text-sm font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
-                  Pro Plan
-                </h3>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-3xl font-extrabold text-ink">₦4,999</span>
-                  <span className="text-gray-400 text-xs">/ month</span>
-                </div>
+        ) : (
+          <div className="flex flex-col flex-1">
+            <div className="text-center">
+              <span className="bg-[rgba(255,195,0,0.14)] text-[#8A6D00] font-extrabold tracking-[0.04em] text-[11px] uppercase py-1.5 px-3.5 rounded-xl">
+                Vero Pro
+              </span>
+              <div className="text-[25px] font-extrabold text-ink leading-[1.25] mt-[14px]">Never guess again.</div>
+              <div className="text-[14px] text-secondary font-medium leading-[1.5] mt-1.5 px-2">
+                Unlimited verifications, priority alerts, zero interruptions.
               </div>
-
-              <ul className="space-y-3 pt-6 border-t border-gray-100 text-sm text-gray-600">
-                {proFeatures.map((feat, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
 
-            <div className="mt-8 space-y-3">
-              {error && (
-                <p className="text-xs text-trust-critical text-center font-medium">{error}</p>
-              )}
-              <button
+            <div className="flex flex-col gap-[10px] my-[24px]">
+              {proFeatures.map((feat, idx) => (
+                <div key={idx} className="flex items-center gap-[12px] bg-surface rounded-[14px] p-[13px] px-[15px] shadow-[0_4px_10px_rgba(43,52,69,0.02)]">
+                  <span className="text-[#00C853] font-extrabold">✓</span>
+                  <span className="text-[14px] font-semibold text-ink">{feat}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex bg-[#EEF1F5] rounded-[14px] p-1 mb-[18px]">
+              <div className="flex-1 text-center py-[9px] rounded-[11px] bg-surface shadow-[0_4px_10px_rgba(43,52,69,0.06)] text-[13px] font-bold text-ink">
+                Monthly · ₦2,500
+              </div>
+              <div className="flex-1 text-center py-[9px] rounded-[11px] text-[13px] font-semibold text-secondary">
+                Annual · ₦24,000
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 text-center text-trust-critical text-[13px] font-medium">
+                {error}
+              </div>
+            )}
+
+            <div className="mt-auto pt-4">
+              <button 
                 onClick={handleUpgrade}
                 disabled={upgrading}
-                className="w-full bg-ink text-surface font-semibold py-3.5 rounded-lg hover:bg-opacity-90 transition-all text-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                className="w-full bg-[#00C853] text-white font-bold py-[17px] rounded-full text-[16px] shadow-[0_12px_28px_rgba(0,200,83,0.28)] transition-transform active:scale-[0.98]"
               >
-                <Zap size={16} className="fill-surface" />
-                {upgrading ? "Upgrading..." : "1-Click Demo Upgrade"}
+                {upgrading ? "Upgrading..." : "Upgrade to Pro"}
               </button>
+              <div 
+                onClick={() => navigate('/settings')}
+                className="text-center mt-3 text-secondary text-[13px] font-semibold cursor-pointer py-2 hover:text-ink transition-colors"
+              >
+                Maybe later
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </PageWrapper>
   );
 }

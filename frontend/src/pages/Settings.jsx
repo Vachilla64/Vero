@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import { User, Lock, CheckCircle, AlertCircle, Calendar, Shield } from "lucide-react";
 
 import PageWrapper from "../components/PageWrapper";
 
@@ -47,105 +47,110 @@ export default function Settings() {
   };
 
   return (
-    <PageWrapper className="px-4">
-      <div className="bg-surface rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+    <PageWrapper className="bg-canvas min-h-screen font-poppins">
+      <div className="flex flex-col flex-1 px-[26px] pb-[26px] pt-4 max-w-md mx-auto w-full min-h-[calc(100vh-60px)]">
+        
+        {/* Top Nav */}
+        <div className="flex items-center justify-between mb-[22px]">
+          <Link to="/" className="text-secondary text-[15px] font-semibold no-underline">‹ Back</Link>
+          <div className="font-bold text-[15px] text-ink">Settings</div>
+          <div className="w-[22px]"></div>
+        </div>
 
-        {/* Member Status Card */}
-        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 space-y-3">
-          <div className="flex items-center gap-2.5 text-sm text-gray-600">
-            <Calendar size={16} className="text-gray-400" />
-            <span>Member since: <strong>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</strong></span>
+        {/* Profile Card */}
+        <div className="flex items-center gap-[14px] bg-surface rounded-[20px] p-[18px] shadow-card mb-[22px]">
+          <div className="w-[52px] h-[52px] rounded-2xl bg-canvas flex items-center justify-center text-[20px] font-bold text-ink uppercase">
+            {user?.name ? user.name.charAt(0) : "U"}
           </div>
-          <div className="flex items-center gap-2.5 text-sm text-gray-600">
-            <Shield size={16} className="text-gray-400" />
-            <span>
-              Lookup Tier:{" "}
-              <strong className={user?.isPremium ? "text-amber-600" : "text-gray-600"}>
-                {user?.isPremium ? "Vero Pro (Unlimited)" : "Free (3 per day)"}
-              </strong>
-            </span>
+          <div className="flex-1">
+            <div className="text-[16px] font-bold text-ink">{user?.name || "User"}</div>
+            <div className="text-[12.5px] font-medium text-secondary">{user?.email || "No email"}</div>
           </div>
+          <span className="bg-canvas text-ink border border-gray-100 rounded-xl px-3 py-1.5 text-[12px] font-medium">Edit</span>
         </div>
 
         {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-100 text-trust-good text-sm rounded-lg flex items-center gap-2">
-            <CheckCircle size={16} className="shrink-0" />
-            <p>{success}</p>
+          <div className="mb-4 p-3 bg-green-50 border border-green-100 text-trust-good text-[13px] rounded-xl font-medium">
+            {success}
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-trust-critical text-sm rounded-lg flex items-center gap-2">
-            <AlertCircle size={16} className="shrink-0" />
-            <p>{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-trust-critical text-[13px] rounded-xl font-medium">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleUpdateProfile} className="space-y-5">
-          {/* Name Field */}
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1.5 flex items-center gap-1.5">
-              <User size={14} className="text-gray-400" /> Display Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={updating}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ink disabled:opacity-50"
+        {/* Account Section */}
+        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Account</div>
+        <form onSubmit={handleUpdateProfile} className="flex flex-col bg-surface rounded-[18px] overflow-hidden mb-[22px] shadow-sm border border-gray-50">
+          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
+            <label className="text-[14.5px] font-semibold text-ink">Display name</label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[160px]" 
             />
           </div>
-
-          {/* Change Password Block */}
-          <div className="pt-4 border-t border-gray-100 space-y-4">
-            <h3 className="text-sm font-semibold text-ink">Change Password</h3>
-            
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <Lock size={12} className="text-gray-400" /> New Password
-              </label>
-              <input
-                type="password"
-                placeholder="Leave blank to keep current"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={updating}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ink disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <Lock size={12} className="text-gray-400" /> Confirm New Password
-              </label>
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={updating}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-ink disabled:opacity-50"
-              />
-            </div>
+          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
+            <span className="text-[14.5px] font-semibold text-ink">Email</span>
+            <span className="text-secondary text-[14px]">{user?.email || "Email"}</span>
           </div>
-
-          <button
-            type="submit"
-            disabled={updating || (name === user?.name && !password)}
-            className="w-full bg-ink text-surface font-semibold py-3 rounded-lg hover:bg-opacity-90 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {updating ? "Saving..." : "Save Changes"}
-          </button>
+          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
+            <label className="text-[14.5px] font-semibold text-ink">New Password</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[120px]" 
+            />
+          </div>
+          {password && (
+            <div className="flex items-center justify-between p-[15px] px-[16px]">
+              <label className="text-[14.5px] font-semibold text-ink">Confirm Password</label>
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[120px]" 
+              />
+            </div>
+          )}
+          
+          {(name !== user?.name || password) && (
+            <div className="p-3 bg-canvas/30">
+              <button 
+                type="submit" 
+                disabled={updating} 
+                className="w-full bg-[#00C853] text-white font-bold py-3 rounded-xl text-[14px] shadow-[0_8px_20px_rgba(0,200,83,0.25)] hover:bg-[#00b047] transition-all"
+              >
+                {updating ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          )}
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <button
-            onClick={logout}
-            className="w-full bg-red-50 text-trust-critical font-semibold py-3 rounded-lg hover:bg-red-100 transition-all text-sm"
-          >
-            Log Out
-          </button>
+        {/* Plan Section */}
+        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Plan</div>
+        <Link to="/upgrade" className="flex items-center gap-[14px] bg-surface rounded-[18px] p-4 shadow-card no-underline mb-6">
+          <div className="w-11 h-11 rounded-[14px] bg-[rgba(255,195,0,0.14)] flex items-center justify-center text-[18px]">⚡</div>
+          <div className="flex-1">
+            <div className="text-[14.5px] font-bold text-ink">{user?.isPremium ? "Vero Pro" : "Free plan"}</div>
+            <div className="text-[12px] font-medium text-secondary">{user?.isPremium ? "Unlimited lookups" : "15 lookups / day"}</div>
+          </div>
+          {!user?.isPremium && (
+            <span className="bg-ink text-white font-bold text-[12px] py-1.5 px-3 rounded-xl">Upgrade</span>
+          )}
+        </Link>
+
+        <div 
+          onClick={logout}
+          className="text-center mt-auto pt-4 text-trust-critical text-[14px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
+        >
+          Log out
         </div>
       </div>
     </PageWrapper>
