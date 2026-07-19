@@ -8,6 +8,9 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Pre-defined safe fallbacks if the LLM times out or crashes.
 const fallbacks = {
   invalid_nuban: "This account number could not be verified in the system.",
+  unknown_account: "Vero has no record of this account yet - treat it like a stranger and double-check the details.",
+  checksum_unverified: "This account number's structure could not be independently confirmed.",
+  invalid_format: "That is not a valid 10-digit account number.",
   suspended_account: "This account is suspended due to severe policy violations.",
   critical_risk: "Accounts with this profile have a critically high association with scams.",
   heavily_reported: "Multiple users have recently reported this account for suspicious behavior.",
@@ -15,6 +18,7 @@ const fallbacks = {
   new_account: "This is a brand new account with no established history.",
   velocity_anomaly: "This transfer amount is unusually high compared to your typical history.",
   high_value: "This is a high-value transfer that requires extra caution.",
+  verified_institution: "This is a verified financial institution account.",
   safe: "This recipient has an established and verified history."
 };
 
@@ -44,7 +48,7 @@ Rules: No markdown. End with a period. Do not use words like 'scam' or 'fraud' d
   const timeoutId = setTimeout(() => controller.abort(), 3000);
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -52,8 +56,9 @@ Rules: No markdown. End with a period. Do not use words like 'scam' or 'fraud' d
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 30,
-          temperature: 0.2
+          maxOutputTokens: 100,
+          temperature: 0.2,
+          thinkingConfig: { thinkingBudget: 0 }
         }
       }),
       signal: controller.signal
