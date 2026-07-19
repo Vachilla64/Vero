@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+
   plugins: [
+    tailwindcss(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -52,7 +55,7 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^http:\/\/localhost:8080\/api\/.*/i,
+            urlPattern: /\/api\//i,
             handler: 'NetworkOnly', // NEVER CACHE API CALLS FOR TRUST SCORES
           }
         ]

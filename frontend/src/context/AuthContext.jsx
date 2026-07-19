@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/api";
 
 const AuthContext = createContext();
 
@@ -8,24 +8,40 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("vero_token") || null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const refreshProfile = async () => {
+    if (!token) return;
+    try {
+      const res = await api.get("/api/user/profile");
+      setUser(res.data);
+      localStorage.setItem("vero_user", JSON.stringify(res.data));
+    } catch (e) {
+      console.error("Failed to refresh user profile", e);
+    }
+  };
+
   // Initialize axios interceptor to attach token
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // In a real app, you might verify the token here with a /me endpoint
-      // For this prototype, if we have a token, we parse the user from local storage
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const savedUser = localStorage.getItem("vero_user");
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+      if (savedUser && savedUser !== "undefined") {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error("Corrupted local storage data. Clearing...", e);
+          localStorage.removeItem("vero_user");
+          localStorage.removeItem("vero_token");
+        }
       }
+      refreshProfile(); // Fetch fresh profile (premium status, lookup count)
     } else {
-      delete axios.defaults.headers.common["Authorization"];
+      delete api.defaults.headers.common["Authorization"];
     }
     setIsLoading(false);
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await axios.post("http://localhost:8080/api/auth/login", { email, password });
+    const res = await api.post("/api/auth/login", { email, password });
     const { token: newToken, user: userData } = res.data;
     
     setToken(newToken);
@@ -35,7 +51,7 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (email, password, name) => {
-    const res = await axios.post("http://localhost:8080/api/auth/register", { email, password, name });
+    const res = await api.post("/api/auth/register", { email, password, name });
     const { token: newToken, user: userData } = res.data;
     
     setToken(newToken);
@@ -52,7 +68,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

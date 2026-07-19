@@ -1,8 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AnimatePresence } from "framer-motion";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import History from "./pages/History";
+import Settings from "./pages/Settings";
+import Upgrade from "./pages/Upgrade";
+
+import TopBar from "./components/TopBar";
+import BottomNav from "./components/BottomNav";
 
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -13,20 +21,71 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-function AppRoutes() {
+const PageLayout = ({ children }) => {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route 
-        path="/" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-    </Routes>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100/50 p-0 sm:p-4 md:p-8">
+      {/* Mobile App Frame Constraint */}
+      <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-canvas relative overflow-hidden sm:rounded-[3rem] sm:shadow-2xl sm:border sm:border-gray-200">
+        <TopBar />
+        {children}
+        <BottomNav />
+      </div>
+    </div>
+  );
+};
+
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected Mobile Pages */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <PageLayout>
+                <Dashboard />
+              </PageLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/history" 
+          element={
+            <ProtectedRoute>
+              <PageLayout>
+                <History />
+              </PageLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute>
+              <PageLayout>
+                <Settings />
+              </PageLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/upgrade" 
+          element={
+            <ProtectedRoute>
+              <PageLayout>
+                <Upgrade />
+              </PageLayout>
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </AnimatePresence>
   );
 }
 

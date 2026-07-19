@@ -16,7 +16,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       return res.status(400).json({ error: 'Missing nuban or reason' });
     }
 
-    if (!validateNuban(nuban)) {
+    if (!/^\d{10}$/.test(nuban)) {
       return res.status(400).json({ error: 'Invalid NUBAN format' });
     }
 
@@ -35,22 +35,23 @@ router.post('/', authenticateJWT, async (req, res) => {
         where: { nuban }
       });
 
+      let justCreated = false;
       if (!targetAccount) {
-        // We dynamically create the scammer's account record so we can track their bad reputation.
-        // We link it to a 'system' user or leave userId nullable.
-        // Wait, our schema requires userId. We will link it to the reporter as the "discoverer", 
-        // or we need a system user. For hackathon, we link to the reporter.
+        // Dynamically create the account record so its reputation can be tracked.
+        // Linked to the reporter as the "discoverer" (schema requires a userId).
+        justCreated = true;
         targetAccount = await tx.account.create({
           data: {
             nuban,
             bankCode: "000",
-            userId: reporterId // The person who "discovered" the account
+            userId: reporterId
           }
         });
       }
 
-      // Prevent reporting oneself
-      if (targetAccount.userId === reporterId) {
+      // Prevent reporting oneself — only meaningful for pre-existing accounts;
+      // a just-created record is merely "discovered by", not owned by, the reporter.
+      if (!justCreated && targetAccount.userId === reporterId) {
         throw new Error("SelfReport");
       }
 

@@ -1,16 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import { Link } from "react-router-dom";
+import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import TrustScoreRing from "../components/TrustScoreRing";
-import { Search, LogOut, AlertTriangle, AlertCircle } from "lucide-react";
+import PageWrapper from "../components/PageWrapper";
+import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [nuban, setNuban] = useState("");
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trustData, setTrustData] = useState(null);
   const [error, setError] = useState("");
+  const [isLimitReached, setIsLimitReached] = useState(false);
   
   // Reporting State
   const [isReporting, setIsReporting] = useState(false);
@@ -18,6 +21,10 @@ export default function Dashboard() {
   const [reportSuccess, setReportSuccess] = useState(false);
 
   const activeRequest = useRef(null);
+
+  useEffect(() => {
+    refreshProfile();
+  }, []);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -34,13 +41,14 @@ export default function Dashboard() {
     setError("");
     setTrustData(null);
     setReportSuccess(false);
+    setIsLimitReached(false);
 
     try {
       // Step 1: Hit API (Sub-2-second latency expected)
       const requestId = Date.now();
       activeRequest.current = requestId;
 
-      const response = await axios.post("http://localhost:8080/api/verify", {
+      const response = await api.post("/api/verify", {
         nuban,
         amount: Number(amount)
       });
@@ -48,17 +56,25 @@ export default function Dashboard() {
       // Prevent race conditions
       if (activeRequest.current !== requestId) return;
 
-      // Step 2: Artificial 5-second cognitive friction delay
+      // Wait for delay or proceed instantly
+      const frictionMs = response.data.score < 30 ? 5000 : 5000; // Will be fixed in T7
       setTimeout(() => {
         if (activeRequest.current === requestId) {
           setTrustData(response.data);
           setIsSubmitting(false);
+          refreshProfile(); // Sync new lookup count
         }
-      }, 5000);
+      }, frictionMs);
 
     } catch (err) {
-      setIsSubmitting(false);
-      setError(err.response?.data?.error || "Verification failed. Please try again.");
+      if (activeRequest.current === requestId) {
+        if (err.response?.status === 403 && err.response?.data?.error === 'LIMIT_REACHED') {
+          setIsLimitReached(true);
+        } else {
+          setError(err.response?.data?.error || "Failed to verify account.");
+        }
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -68,7 +84,7 @@ export default function Dashboard() {
     setError("");
 
     try {
-      await axios.post("http://localhost:8080/api/report", {
+      await api.post("/api/report", {
         nuban,
         reason: reportReason
       });
@@ -86,26 +102,19 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas p-4 md:p-8">
-      {/* Header */}
-      <header className="flex items-center justify-between max-w-4xl mx-auto mb-12">
-        <h1 className="text-2xl font-bold tracking-tight text-ink">Vero</h1>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <span className="text-gray-600">Signed in as {user?.name}</span>
-          <button 
-            onClick={logout} 
-            className="flex items-center gap-2 text-ink hover:text-gray-600 transition-colors"
-          >
-            <LogOut size={16} /> Logout
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+    <PageWrapper className="px-4">
+      <main className="flex flex-col gap-8 pb-8">
         
         {/* Left Column: Input Form */}
         <div className="bg-surface p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-ink mb-6">Verify Recipient</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-ink">Verify Recipient</h2>
+            {user && !user.isPremium && (
+              <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md font-medium border border-amber-100">
+                {user.lookupsRemaining} of 3 free lookups left today
+              </span>
+            )}
+          </div>
           
           <form onSubmit={handleVerify} className="space-y-5">
             <div>
@@ -155,7 +164,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column: Results & Trust Ring */}
-        <div className={`bg-surface p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[400px] transition-all duration-500 ${trustData?.score < 30 ? 'bg-red-50/30' : ''}`}>
+        <div className={`bg-surface p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[250px] md:min-h-[400px] transition-all duration-500 ${trustData?.score < 30 ? 'bg-red-50/30' : ''}`}>
           
           {(isSubmitting || trustData) ? (
             <div className="w-full flex flex-col items-center animate-fade-in">
@@ -230,6 +239,36 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-    </div>
+
+      {/* Limit Reached Modal */}
+      {isLimitReached && (
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-surface max-w-sm w-full rounded-2xl shadow-xl border border-gray-100 p-6 text-center">
+            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
+              <Zap size={24} className="fill-amber-600" />
+            </div>
+            <h3 className="text-xl font-bold text-ink mb-2">Daily Limit Reached</h3>
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+              You have used all 3 of your free daily checks. Upgrade to Vero Pro now to unlock unlimited instant verifications!
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/upgrade"
+                onClick={() => setIsLimitReached(false)}
+                className="w-full bg-ink text-surface font-semibold py-3 rounded-lg hover:bg-opacity-90 transition-all text-center text-sm"
+              >
+                Upgrade to Pro
+              </Link>
+              <button
+                onClick={() => setIsLimitReached(false)}
+                className="w-full text-xs font-semibold text-gray-400 hover:text-gray-600 py-2 transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </PageWrapper>
   );
 }

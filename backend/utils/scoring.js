@@ -12,9 +12,9 @@ async function calculateTrustScore(account, senderId, amount) {
   let score = 100;
   const flags = new Set();
 
-  // 1. Invalid or Missing Account
+  // 1. Unknown Account — not in the network yet. Honest moderate caution, not a false alarm.
   if (!account) {
-    return { score: 0, flags: ['invalid_nuban'] };
+    return { score: 55, flags: ['unknown_account'] };
   }
 
   // 2. Suspended Account Check
@@ -87,6 +87,11 @@ async function calculateTrustScore(account, senderId, amount) {
   if (amount > 1000000) {
     score -= 10;
     flags.add('high_value');
+  }
+
+  // Union Bank Tag
+  if (account.bankCode === '032') {
+    flags.add('verified_institution');
   }
 
   // Critical Risk Floor
