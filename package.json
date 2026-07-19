@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix frontend\"",
-    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
-    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend"
+    "start": "concurrently \"pnpm --prefix backend start\" \"pnpm --prefix frontend start\"",
+    "dev": "concurrently \"pnpm --prefix backend dev\" \"pnpm --prefix frontend dev\"",
+    "install:all": "pnpm install && pnpm install --prefix backend && pnpm install --prefix frontend"
   },
   "keywords": [],
   "author": "",

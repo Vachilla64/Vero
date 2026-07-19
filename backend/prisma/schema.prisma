@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now())
-  accounts  Account[]
-  reports   Report[]
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String
+  isPremium     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  accounts      Account[]
+  reports       Report[]
+  verifications Verification[]
 }
 
 model Account {
@@ -52,4 +54,18 @@ model Report {
   account    Account  @relation(fields: [accountId], references: [id])
 
   @@unique([userId, accountId])
+}
+
+model Verification {
+  id          String   @id @default(cuid())
+  nuban       String
+  amount      Float
+  score       Int
+  flags       String[]
+  explanation String
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

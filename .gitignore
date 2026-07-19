@@ -39,3 +39,6 @@ backend/.env
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Documentation
+EXECUTION_BRIEF.md
