@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#00C853"/>
+  <!-- Shield path - solid white -->
+  <path d="M256 96 L384 152 L384 280 C384 344 330 396 256 424 C182 396 128 344 128 280 L128 152 Z"
+        fill="white"/>
+  <!-- Checkmark inside shield -->
+  <polyline points="200,268 238,308 316,224"
+            fill="none"
+            stroke="#00C853"
+            stroke-width="28"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+</svg>

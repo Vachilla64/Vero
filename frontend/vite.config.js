@@ -10,14 +10,17 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'vero-icon.svg'],
       manifest: {
-        name: 'Vero - Trust Network',
+        name: 'Vero – Trust Network',
         short_name: 'Vero',
-        description: 'Verify financial trust scores before sending money.',
-        theme_color: '#F4F6F9',
-        background_color: '#F4F6F9',
+        description: 'Real-time Trust Scores for Nigerian bank accounts. Stop scams before the money leaves.',
+        theme_color: '#2B3445',
+        background_color: '#2B3445',
         display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -33,7 +36,12 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          },
+          {
+            src: 'vero-icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml'
           }
         ]
       },
