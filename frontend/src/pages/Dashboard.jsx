@@ -56,8 +56,8 @@ export default function Dashboard() {
       // Prevent race conditions
       if (activeRequest.current !== requestId) return;
 
-      // Wait for delay or proceed instantly
-      const frictionMs = response.data.score < 30 ? 5000 : 5000; // Will be fixed in T7
+      // Step 2: Cognitive friction is proportional to risk — instant when safe.
+      const frictionMs = response.data.score < 30 ? 3000 : 600;
       setTimeout(() => {
         if (activeRequest.current === requestId) {
           setTrustData(response.data);
