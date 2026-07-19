@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 // POST /api/verify
 router.post('/', authenticateJWT, async (req, res) => {
   try {
-    const { nuban, amount } = req.body;
+    const { nuban, bankCode, amount } = req.body;
     const senderId = req.user.userId;
 
     if (!nuban || amount === undefined) {
@@ -75,7 +75,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 
       // 4. Checksum is a soft signal only — we can't know every institution's
       // bank code, so a failed checksum informs, it never blocks.
-      if (!validateNuban(nuban)) {
+      if (!validateNuban(nuban, bankCode)) {
         flags = [...flags, 'checksum_unverified'];
         breakdown.push({ signal: 'checksum_unverified', points: 0, reason: 'Could not verify check digit' });
       }

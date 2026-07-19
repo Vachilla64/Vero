@@ -3,16 +3,35 @@ import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/PageWrapper";
-import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap, X } from "lucide-react";
+import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap, X, ChevronDown, Building2 } from "lucide-react";
+
+const BANKS = [
+  { code: "044", name: "Access Bank", color: "text-orange-500", bg: "bg-orange-500/10" },
+  { code: "058", name: "GTBank", color: "text-orange-600", bg: "bg-orange-600/10" },
+  { code: "057", name: "Zenith Bank", color: "text-red-500", bg: "bg-red-500/10" },
+  { code: "033", name: "UBA", color: "text-red-600", bg: "bg-red-600/10" },
+  { code: "011", name: "First Bank", color: "text-blue-800", bg: "bg-blue-800/10" },
+  { code: "032", name: "Union Bank", color: "text-blue-400", bg: "bg-blue-400/10" },
+  { code: "50211", name: "Kuda Bank", color: "text-purple-600", bg: "bg-purple-600/10" },
+  { code: "090267", name: "Kuda Microfinance", color: "text-purple-600", bg: "bg-purple-600/10" },
+  { code: "100004", name: "OPay", color: "text-green-500", bg: "bg-green-500/10" },
+  { code: "090405", name: "Moniepoint", color: "text-blue-600", bg: "bg-blue-600/10" },
+  { code: "100033", name: "Palmpay", color: "text-purple-500", bg: "bg-purple-500/10" },
+];
 
 export default function Dashboard() {
   const { user, refreshProfile } = useAuth();
   const [nuban, setNuban] = useState("");
   const [amount, setAmount] = useState("");
+  const [selectedBank, setSelectedBank] = useState(BANKS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trustData, setTrustData] = useState(null);
   const [error, setError] = useState("");
   const [isLimitReached, setIsLimitReached] = useState(false);
+  
+  // UI States
+  const [isFocused, setIsFocused] = useState(false);
+  const [showBankSelector, setShowBankSelector] = useState(false);
   
   // Modals
   const [showReportModal, setShowReportModal] = useState(false);
@@ -31,10 +50,9 @@ export default function Dashboard() {
   const handleVerify = async (e) => {
     e?.preventDefault();
     if (!nuban || nuban.length !== 10) {
-      setError("Please enter a valid 10-digit NUBAN.");
+      setError("Please enter a valid 10-digit account number.");
       return;
     }
-    // Amount is optional in the new design (4a), but we might still need it for the backend API. We can default it to 0 if not provided.
     const transferAmount = amount ? Number(amount) : 0;
 
     setIsSubmitting(true);
@@ -42,6 +60,7 @@ export default function Dashboard() {
     setTrustData(null);
     setReportSuccess(false);
     setIsLimitReached(false);
+    setIsFocused(false); // Drop focus on submit
 
     try {
       const requestId = Date.now();
@@ -49,6 +68,7 @@ export default function Dashboard() {
 
       const response = await api.post("/api/verify", {
         nuban,
+        bankCode: selectedBank.code,
         amount: transferAmount
       });
 
@@ -111,8 +131,14 @@ export default function Dashboard() {
   // 4a: Home / Search state
   if (!trustData) {
     return (
-      <PageWrapper className="bg-surface overflow-hidden pt-12 pb-20">
-        <div className="flex flex-col h-full px-6">
+      <PageWrapper className="bg-surface overflow-hidden pt-12 pb-20 relative">
+        {/* Dim Overlay when Focused */}
+        <div 
+          className={`absolute inset-0 bg-ink/40 z-10 transition-opacity duration-300 ${isFocused ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setIsFocused(false)}
+        />
+        
+        <div className="flex flex-col h-full px-6 relative z-0">
           <div className="flex items-center justify-between mb-5">
             <div className="font-extrabold text-[17px] text-ink tracking-wider">VERO</div>
             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold text-ink text-sm shadow-card-xs">
@@ -120,85 +146,161 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="text-[22px] font-bold text-ink leading-tight mb-5">
-            Check an account<br/>before you send.
+          <div className="text-[26px] font-bold text-ink leading-[1.15] mb-6">
+            Verify before<br/>you transfer.
           </div>
 
-          <form onSubmit={handleVerify} className="flex flex-col gap-4">
-            <div className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-card-sm">
-              <span className="text-secondary text-lg font-medium">⌕</span>
-              <input 
-                type="text" 
-                maxLength="10"
-                value={nuban}
-                onChange={(e) => setNuban(e.target.value.replace(/\D/g, ''))}
-                placeholder="Account number or @username"
-                className="flex-1 bg-transparent outline-none text-ink font-medium text-[15px] placeholder-secondary"
-                disabled={isSubmitting}
-              />
+          <form onSubmit={handleVerify} className={`flex flex-col gap-4 relative transition-all duration-300 ${isFocused ? 'z-20 scale-[1.02]' : 'z-0'}`}>
+            
+            <div className="flex flex-col gap-3">
+              {/* Bank Selector Button */}
+              <div 
+                onClick={() => setShowBankSelector(true)}
+                className={`flex items-center justify-between bg-white rounded-2xl p-4 cursor-pointer transition-shadow duration-300 ${isFocused ? 'shadow-app border border-white' : 'shadow-card-sm'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${selectedBank.bg} ${selectedBank.color}`}>
+                    <Building2 size={16} />
+                  </div>
+                  <span className="text-ink font-bold text-[15px]">{selectedBank.name}</span>
+                </div>
+                <ChevronDown size={20} className="text-secondary" />
+              </div>
+
+              {/* NUBAN Input */}
+              <div className={`flex items-center gap-3 bg-white rounded-2xl p-4 transition-shadow duration-300 ${isFocused ? 'shadow-app border border-white ring-2 ring-ink/5' : 'shadow-card-sm'}`}>
+                <span className="text-secondary text-lg font-medium">⌕</span>
+                <input 
+                  type="text" 
+                  maxLength="10"
+                  value={nuban}
+                  onFocus={() => setIsFocused(true)}
+                  onChange={(e) => setNuban(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Account number"
+                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-secondary/70"
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
-            {/* Amount Input (Optional) */}
-            {nuban.length === 10 && (
-              <div className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-card-sm animate-fade-in">
+
+            {/* Amount Input (Optional, appears on focus or if filled) */}
+            {(isFocused || amount || nuban.length === 10) && (
+              <div className={`flex items-center gap-3 bg-white rounded-2xl p-4 transition-all duration-300 animate-fade-in ${isFocused ? 'shadow-app border border-white' : 'shadow-card-sm'}`}>
                 <span className="text-secondary text-lg font-medium">₦</span>
                 <input 
                   type="number" 
                   value={amount}
+                  onFocus={() => setIsFocused(true)}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Amount (Optional)"
-                  className="flex-1 bg-transparent outline-none text-ink font-medium text-[15px] placeholder-secondary"
+                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-secondary/70"
                   disabled={isSubmitting}
                 />
               </div>
             )}
             
             {error && (
-              <div className="p-3 bg-trust-red/10 border border-trust-red/20 text-trust-red text-sm rounded-xl font-medium">
+              <div className="p-3 bg-trust-red/10 border border-trust-red/20 text-trust-red text-sm rounded-xl font-medium animate-fade-in">
                 {error}
               </div>
             )}
 
             {isSubmitting ? (
-              <button disabled className="w-full bg-ink text-white font-semibold py-4 rounded-full mt-4 opacity-70">
+              <button disabled className="w-full bg-ink text-white font-semibold py-4 rounded-full mt-2 opacity-70">
                 Analyzing Risk...
               </button>
             ) : (
-              nuban.length === 10 && (
-                <button type="submit" className="w-full bg-trust-green text-white font-semibold py-4 rounded-full mt-4 shadow-btn-green animate-fade-in">
+              (nuban.length === 10 || isFocused) && (
+                <button 
+                  type="submit" 
+                  disabled={nuban.length !== 10}
+                  className={`w-full font-semibold py-4 rounded-full mt-2 transition-all duration-300 animate-fade-in ${
+                    nuban.length === 10 
+                    ? 'bg-trust-green text-white shadow-btn-green translate-y-0 opacity-100' 
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-80'
+                  }`}
+                >
                   Verify Account
                 </button>
               )
             )}
           </form>
 
-          <div className="text-[11px] font-bold text-secondary uppercase tracking-widest mt-7 mb-3">Recent</div>
-          <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto no-scrollbar pb-10">
-            {/* Fake recent data to match 4a design */}
-            <div className="flex items-center gap-3 bg-white rounded-2xl p-3 shadow-card-xs cursor-pointer" onClick={() => { setNuban("0123456789"); }}>
-              <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-green text-base relative">
-                A
-                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-green border-2 border-white"></div>
+          {/* Recent Lookups (Fade out when focused) */}
+          <div className={`transition-opacity duration-300 ${isFocused ? 'opacity-30' : 'opacity-100'}`}>
+            <div className="flex items-center justify-between mt-8 mb-4">
+              <div className="text-[12px] font-bold text-secondary uppercase tracking-[0.1em]">Recent</div>
+              <div className="text-[11px] font-bold text-trust-green bg-trust-green/10 px-2 py-0.5 rounded-md">
+                {user?.lookupsRemaining || 0} left today
               </div>
-              <div className="flex-1">
-                <div className="text-[15px] font-bold text-ink">Adaeze Okafor</div>
-                <div className="text-[12.5px] text-secondary font-medium">GTBank · ••••4821</div>
-              </div>
-              <div className="text-[13px] font-bold text-trust-green">92</div>
             </div>
             
-            <div className="flex items-center gap-3 bg-white rounded-2xl p-3 shadow-card-xs cursor-pointer" onClick={() => { setNuban("0987654321"); }}>
-              <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-amber text-base relative">
-                B
-                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-amber border-2 border-white"></div>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(BANKS.find(b => b.code === "032") || BANKS[0]); }}>
+                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-green text-base relative">
+                  C
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-green border-2 border-white"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[15px] font-bold text-ink">Clean User</div>
+                  <div className="text-[12.5px] text-secondary font-medium">Union Bank · ••••0007</div>
+                </div>
+                <div className="text-[13px] font-bold text-trust-green bg-trust-green/10 px-2 py-1 rounded-lg">100</div>
               </div>
-              <div className="flex-1">
-                <div className="text-[15px] font-bold text-ink">Blessing Eze</div>
-                <div className="text-[12.5px] text-secondary font-medium">Kuda · ••••1902</div>
+              
+              <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000021"); setSelectedBank(BANKS.find(b => b.code === "000") || BANKS[0]); }}>
+                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-red text-base relative">
+                  M
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-red border-2 border-white"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[15px] font-bold text-ink">Mule User</div>
+                  <div className="text-[12.5px] text-secondary font-medium">Bank · ••••0021</div>
+                </div>
+                <div className="text-[13px] font-bold text-trust-red bg-trust-red/10 px-2 py-1 rounded-lg">10</div>
               </div>
-              <div className="text-[13px] font-bold text-trust-amber">54</div>
             </div>
           </div>
         </div>
+
+        {/* Bank Selector Bottom Sheet */}
+        {showBankSelector && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setShowBankSelector(false)} />
+            <div className="bg-surface w-full max-w-md h-[70vh] sm:h-auto sm:max-h-[70vh] sm:rounded-[24px] rounded-t-[32px] flex flex-col p-0 shadow-app relative animate-fade-in z-10 overflow-hidden">
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div className="font-bold text-[16px] text-ink">Select Bank</div>
+                <button onClick={() => setShowBankSelector(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-secondary hover:bg-gray-200">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="overflow-y-auto p-4 flex flex-col gap-2 no-scrollbar">
+                {BANKS.map(bank => (
+                  <div 
+                    key={bank.code}
+                    onClick={() => {
+                      setSelectedBank(bank);
+                      setShowBankSelector(false);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-colors ${selectedBank.code === bank.code ? 'bg-white shadow-card-xs border border-gray-100' : 'hover:bg-white/50 border border-transparent'}`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${bank.bg} ${bank.color}`}>
+                      <Building2 size={18} />
+                    </div>
+                    <span className={`font-bold text-[15px] ${selectedBank.code === bank.code ? 'text-ink' : 'text-secondary'}`}>
+                      {bank.name}
+                    </span>
+                    {selectedBank.code === bank.code && (
+                      <div className="ml-auto w-5 h-5 rounded-full bg-trust-green text-white flex items-center justify-center text-xs">
+                        ✓
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Limit Reached Modal */}
         {isLimitReached && (
@@ -298,7 +400,7 @@ export default function Dashboard() {
           </div>
           <div>
             <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Unknown User"}</div>
-            <div className="text-[14px] text-secondary font-medium">Bank · ••••{nuban.slice(-4)}</div>
+            <div className="text-[14px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
           </div>
         </div>
 
@@ -355,8 +457,8 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 mb-5 shadow-card-xs">
               <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-red text-[16px]">C</div>
               <div>
-                <div className="font-bold text-[15px] text-ink">Unknown User</div>
-                <div className="text-[12.5px] text-secondary font-medium">Bank · ••••{nuban.slice(-4)}</div>
+                <div className="font-bold text-[15px] text-ink">{trustData.accountName || "Unknown User"}</div>
+                <div className="text-[12.5px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
               </div>
             </div>
 

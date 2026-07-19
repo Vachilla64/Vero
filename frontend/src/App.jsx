@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 import Upgrade from "./pages/Upgrade";
+import HowItWorks from "./pages/HowItWorks";
 
 import TopBar from "./components/TopBar";
 import BottomNav from "./components/BottomNav";
@@ -80,6 +81,16 @@ function AppRoutes() {
             <ProtectedRoute>
               <PageLayout>
                 <Upgrade />
+              </PageLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/how-it-works" 
+          element={
+            <ProtectedRoute>
+              <PageLayout>
+                <HowItWorks />
               </PageLayout>
             </ProtectedRoute>
           } 

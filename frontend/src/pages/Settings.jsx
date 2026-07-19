@@ -146,6 +146,22 @@ export default function Settings() {
           )}
         </Link>
 
+        {/* Demo Section */}
+        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Demo</div>
+        <Link to="/how-it-works" className="flex items-center gap-[14px] bg-surface rounded-[18px] p-4 shadow-card no-underline mb-6 border border-[#01C38E]/30 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-[#01C38E]/5 rounded-bl-[100%] pointer-events-none"></div>
+          <div className="w-11 h-11 rounded-[14px] bg-[#01C38E]/10 flex items-center justify-center text-[18px]">
+             <span className="text-[#01C38E] text-[20px]">📱</span>
+          </div>
+          <div className="flex-1">
+            <div className="text-[14.5px] font-bold text-ink flex items-center gap-2">
+              OPay Mockup <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold uppercase">Prototype</span>
+            </div>
+            <div className="text-[12px] font-medium text-secondary">Interactive payment journey demo</div>
+          </div>
+          <span className="text-secondary font-bold text-lg pr-2">›</span>
+        </Link>
+
         <div 
           onClick={logout}
           className="text-center mt-auto pt-4 text-trust-critical text-[14px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
