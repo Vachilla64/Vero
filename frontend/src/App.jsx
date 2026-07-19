@@ -23,10 +23,10 @@ const ProtectedRoute = ({ children }) => {
 
 const PageLayout = ({ children }) => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100/50 p-0 sm:p-4 md:p-8">
+    <div className="flex items-center justify-center min-h-screen bg-canvas p-0 sm:p-4 md:p-8">
       {/* Mobile App Frame Constraint */}
-      <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-canvas relative overflow-hidden sm:rounded-[3rem] sm:shadow-2xl sm:border sm:border-gray-200">
-        <TopBar />
+      <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-surface relative overflow-hidden sm:rounded-[3rem] sm:shadow-app">
+        {/* TopBar is removed here because the new design dictates custom headers per page (like the transparent ones on verdict screens or specific titles) */}
         {children}
         <BottomNav />
       </div>
