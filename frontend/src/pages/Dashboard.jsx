@@ -111,7 +111,7 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-ink">Verify Recipient</h2>
             {user && !user.isPremium && (
               <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md font-medium border border-amber-100">
-                {user.lookupsRemaining} of 3 free lookups left today
+                {user.lookupsRemaining} of 15 free lookups left today
               </span>
             )}
           </div>
@@ -249,7 +249,7 @@ export default function Dashboard() {
             </div>
             <h3 className="text-xl font-bold text-ink mb-2">Daily Limit Reached</h3>
             <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-              You have used all 3 of your free daily checks. Upgrade to Vero Pro now to unlock unlimited instant verifications!
+              You have used all your free daily checks. Upgrade to Vero Pro now to unlock unlimited instant verifications!
             </p>
             <div className="flex flex-col gap-2">
               <Link

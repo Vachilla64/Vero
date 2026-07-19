@@ -40,10 +40,10 @@ router.post('/', authenticateJWT, async (req, res) => {
         }
       });
 
-      if (count >= 3) {
+      if (count >= 15) {
         return res.status(403).json({
           error: 'LIMIT_REACHED',
-          message: 'You have reached your daily limit of 3 free checks. Please upgrade to Pro.'
+          message: 'You have reached your daily limit of 15 free checks. Please upgrade to Pro.'
         });
       }
     }
