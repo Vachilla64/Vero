@@ -1,7 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const authenticateJWT = require('../middleware/authMiddleware');
-const { validateNuban } = require('../utils/nuban');
+const { validateNuban, generateFakeName } = require('../utils/nuban');
 const { calculateTrustScore } = require('../utils/scoring');
 const { getExplanation } = require('../utils/llm');
 
@@ -53,6 +53,8 @@ router.post('/', authenticateJWT, async (req, res) => {
     let explanation = '';
     let breakdown = [];
 
+    let account = null;
+
     // 1. Format gate (hard): must be exactly 10 digits
     if (!/^\d{10}$/.test(nuban)) {
       score = 0;
@@ -61,7 +63,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       breakdown = [{ signal: 'invalid_format', points: -100, reason: 'Invalid NUBAN format' }];
     } else {
       // 2. Fetch Account from Postgres
-      const account = await prisma.account.findUnique({
+      account = await prisma.account.findUnique({
         where: { nuban }
       });
 
@@ -102,7 +104,8 @@ router.post('/', authenticateJWT, async (req, res) => {
       flags,
       explanation,
       breakdown,
-      timesChecked
+      timesChecked,
+      accountName: account ? account.name : generateFakeName(nuban)
     });
 
   } catch (error) {

@@ -6,6 +6,8 @@
   "scripts": {
     "start": "concurrently \"pnpm --prefix backend start\" \"pnpm --prefix frontend start\"",
     "dev": "concurrently \"pnpm --prefix backend dev\" \"pnpm --prefix frontend dev\"",
+    "dev:backend": "pnpm --prefix backend dev",
+    "dev:frontend": "pnpm --prefix frontend dev",
     "install:all": "pnpm install && pnpm install --prefix backend && pnpm install --prefix frontend"
   },
   "keywords": [],

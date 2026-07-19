@@ -294,10 +294,10 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col px-7 pt-7 pb-10">
         <div className="flex items-center gap-3 mb-5">
           <div className={`w-[52px] h-[52px] rounded-2xl ${avatarBg} flex items-center justify-center font-bold text-[20px] ${avatarColor}`}>
-            {isUnverified ? "?" : "U"}
+            {isUnverified ? "?" : (trustData.accountName ? trustData.accountName.charAt(0) : "U")}
           </div>
           <div>
-            <div className="font-bold text-[19px] text-ink">{isUnverified ? nuban : "User Account"}</div>
+            <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Unknown User"}</div>
             <div className="text-[14px] text-secondary font-medium">Bank · ••••{nuban.slice(-4)}</div>
           </div>
         </div>

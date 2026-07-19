@@ -38,6 +38,20 @@ function validateNuban(accountNumber, bankCode = "000") {
   return calculatedCheckDigit === checkDigit;
 }
 
+const FIRST_NAMES = ["Chidi", "Blessing", "Adaeze", "Tunde", "Emeka", "Ngozi", "Aisha", "Ibrahim", "Oluwaseun", "Fatima", "Kelechi", "Chiamaka", "Abubakar", "Folake", "Obinna"];
+const LAST_NAMES = ["Nwosu", "Eze", "Okafor", "Adeyemi", "Okonkwo", "Ibrahim", "Musa", "Bello", "Ogunleye", "Abiola", "Olawale", "Okoro", "Nwachukwu", "Umar", "Lawal"];
+
+function generateFakeName(nuban) {
+  if (!nuban || nuban.length !== 10) return "Unknown User";
+  
+  // Use parts of NUBAN to deterministically pick names
+  const firstIndex = parseInt(nuban.substring(0, 5), 10) % FIRST_NAMES.length;
+  const lastIndex = parseInt(nuban.substring(5, 10), 10) % LAST_NAMES.length;
+  
+  return `${FIRST_NAMES[firstIndex]} ${LAST_NAMES[lastIndex]}`;
+}
+
 module.exports = {
   validateNuban,
+  generateFakeName
 };

@@ -15,7 +15,14 @@ router.get('/', authenticateJWT, async (req, res) => {
       orderBy: { createdAt: 'desc' }
     });
 
-    res.status(200).json(verifications);
+    const { generateFakeName } = require('../utils/nuban');
+    
+    const verificationsWithNames = verifications.map(v => ({
+      ...v,
+      name: generateFakeName(v.nuban)
+    }));
+
+    res.status(200).json(verificationsWithNames);
   } catch (error) {
     console.error('History Fetch Error:', error);
     res.status(500).json({ error: 'Internal server error' });
