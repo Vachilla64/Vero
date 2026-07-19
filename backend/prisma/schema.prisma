@@ -23,6 +23,7 @@ model Account {
   id           String        @id @default(cuid())
   nuban        String        @unique
   bankCode     String        @default("000")
+  name         String?       // Account holder name (from bank API or manually set)
   status       String        @default("active") // active, suspended
   createdAt    DateTime      @default(now())
   userId       String

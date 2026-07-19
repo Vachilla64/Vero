@@ -141,6 +141,53 @@ async function main() {
     }
   });
 
+  // 6. Seed "Ella Stores" — known bad actor (GTBank, 9876543210)
+  //    Heavily reported, suspended, no legit transaction history.
+  const userEllaStores = await prisma.user.create({
+    data: {
+      email: 'ellastores@vero.net',
+      name: 'Ella Stores',
+      password: passwordHash,
+    }
+  });
+
+  const accountEllaStores = await prisma.account.create({
+    data: {
+      nuban: '9876543210',
+      bankCode: '058', // GTBank
+      name: 'Ella Stores',
+      status: 'suspended',
+      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // 45 days ago
+      userId: userEllaStores.id,
+    }
+  });
+
+  // Seed high-velocity suspicious transactions (spike pattern)
+  const now = Date.now();
+  await prisma.transaction.createMany({
+    data: [
+      { amount: 250000, createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000), accountId: accountEllaStores.id },
+      { amount: 180000, createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000 + 10 * 60 * 1000), accountId: accountEllaStores.id },
+      { amount: 320000, createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000 + 20 * 60 * 1000), accountId: accountEllaStores.id },
+      { amount: 95000,  createdAt: new Date(now - 1 * 24 * 60 * 60 * 1000), accountId: accountEllaStores.id },
+      { amount: 410000, createdAt: new Date(now - 1 * 24 * 60 * 60 * 1000 + 5 * 60 * 1000), accountId: accountEllaStores.id },
+    ]
+  });
+
+  // Seed 5 reports from different users — triggers heavily_reported
+  const rep4 = await prisma.user.create({ data: { email: 'rep4@vero.net', name: 'Reporter 4', password: passwordHash } });
+  const rep5 = await prisma.user.create({ data: { email: 'rep5@vero.net', name: 'Reporter 5', password: passwordHash } });
+
+  await prisma.report.createMany({
+    data: [
+      { reason: 'scam',          penalty: 20, userId: reporter1.id,       accountId: accountEllaStores.id },
+      { reason: 'scam',          penalty: 20, userId: reporter2.id,       accountId: accountEllaStores.id },
+      { reason: 'impersonation', penalty: 20, userId: reporter3.id,       accountId: accountEllaStores.id },
+      { reason: 'phishing',      penalty: 20, userId: rep4.id,            accountId: accountEllaStores.id },
+      { reason: 'scam',          penalty: 20, userId: rep5.id,            accountId: accountEllaStores.id },
+    ]
+  });
+
   console.log("Database seeded successfully.");
 }
 

@@ -105,7 +105,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       explanation,
       breakdown,
       timesChecked,
-      accountName: account ? account.name : generateFakeName(nuban)
+      accountName: account ? (account.name || generateFakeName(nuban)) : generateFakeName(nuban)
     });
 
   } catch (error) {
