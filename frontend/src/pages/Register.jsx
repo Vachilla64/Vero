@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -23,70 +22,81 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-canvas p-4">
-      <div className="max-w-md w-full bg-surface rounded-2xl shadow-sm border border-gray-100 p-8">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-ink text-surface rounded-full flex items-center justify-center mb-4">
-            <ShieldCheck size={24} />
-          </div>
-          <h2 className="text-2xl font-bold text-ink tracking-tight">Create an account</h2>
-          <p className="text-gray-500 text-sm mt-1">Join the trusted financial network.</p>
+    <div className="min-h-screen flex flex-col bg-surface font-sans">
+      <div className="flex-1 flex flex-col px-[26px] pb-[26px] pt-12 max-w-md mx-auto w-full overflow-hidden">
+        <div className="text-center font-extrabold text-[17px] text-ink tracking-[.04em] mb-[28px]">VERO</div>
+        
+        <div className="flex bg-[#EEF1F5] rounded-[14px] p-1 mb-[26px]">
+          <div className="flex-1 text-center p-[10px] rounded-[11px] bg-white shadow-[0_4px_10px_rgba(43,52,69,.06)] text-[14px] font-bold text-ink">Create account</div>
+          <Link to="/login" className="flex-1 text-center p-[10px] rounded-[11px] text-[14px] font-semibold text-secondary hover:text-ink transition-colors">Log in</Link>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-trust-critical text-sm rounded-lg text-center">
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-trust-red text-sm rounded-lg text-center font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all"
-              placeholder="John Doe"
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+          <div className="flex flex-col gap-3">
+            <div className="bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs">
+              <div className="font-bold text-[11px] tracking-[.06em] uppercase text-secondary mb-1">Full name</div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
+                placeholder="Adaeze Okafor"
+              />
+            </div>
+            <div className="bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs">
+              <div className="font-bold text-[11px] tracking-[.06em] uppercase text-secondary mb-1">Email</div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
+                placeholder="adaeze@gmail.com"
+              />
+            </div>
+            <div className="bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs">
+              <div className="font-bold text-[11px] tracking-[.06em] uppercase text-secondary mb-1">Password</div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
+                placeholder="••••••••••"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all"
-              placeholder="you@example.com"
-            />
+
+          <div className="mt-6">
+            <button
+              type="submit"
+              className="w-full bg-trust-green text-white font-semibold text-[16px] p-[17px] rounded-full shadow-btn-green border-none cursor-pointer hover:bg-opacity-90 transition-all active:scale-[0.98]"
+            >
+              Create account
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-ink text-surface font-semibold py-3 rounded-lg hover:bg-opacity-90 transition-all active:scale-[0.98]"
-          >
-            Create Account
-          </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <Link to="/login" className="text-ink font-medium hover:underline">
-            Sign in
-          </Link>
-        </p>
+        <div className="flex items-center gap-[10px] my-[18px]">
+          <div className="flex-1 h-px bg-[#E2E6EC]"></div>
+          <span className="text-[12px] text-secondary font-semibold">or</span>
+          <div className="flex-1 h-px bg-[#E2E6EC]"></div>
+        </div>
+
+        <button type="button" className="w-full bg-white text-ink border-[1.5px] border-[#EEF1F5] font-semibold text-[16px] p-[17px] rounded-full cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.98]">
+          Continue with Google
+        </button>
+
+        <div className="text-center mt-auto pt-5 text-secondary text-[13px] font-medium">
+          Already have an account? <Link to="/login" className="text-trust-green font-bold hover:underline">Log in</Link>
+        </div>
       </div>
     </div>
   );
