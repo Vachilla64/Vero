@@ -29,13 +29,13 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
+      prisma:
+        specifier: ^5.14.0
+        version: 5.22.0
     devDependencies:
       nodemon:
         specifier: ^3.1.14
         version: 3.1.14
-      prisma:
-        specifier: ^5.14.0
-        version: 5.22.0
 
 packages:
 
