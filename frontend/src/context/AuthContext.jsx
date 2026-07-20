@@ -19,8 +19,23 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Initialize axios interceptor to attach token
+  // Initialize axios interceptor to attach token and handle global auth errors
   useEffect(() => {
+    const resInterceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 403 && error.response.data?.error === 'Invalid or expired token') {
+          // Token expired, log user out globally
+          setToken(null);
+          setUser(null);
+          localStorage.removeItem("vero_token");
+          localStorage.removeItem("vero_user");
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+
     if (token) {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const savedUser = localStorage.getItem("vero_user");
@@ -38,6 +53,10 @@ export function AuthProvider({ children }) {
       delete api.defaults.headers.common["Authorization"];
     }
     setIsLoading(false);
+
+    return () => {
+      api.interceptors.response.eject(resInterceptor);
+    };
   }, [token]);
 
   const login = async (email, password) => {
