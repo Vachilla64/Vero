@@ -7,17 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#E9EDF2",
-        surface: "#F4F6F9",
+        canvas: "#F4F6F9",
+        surface: "#FFFFFF",
         ink: "#2B3445",
-        secondary: "#A0AAB2",
-        trust: {
-          green: "#00C853",
-          greenLight: "#00E676",
-          amber: "#FFC300",
-          orange: "#FF8A00",
-          red: "#FF4B4B"
-        }
+        slate: "#A0AAB2",
+        hairline: "#EEF1F5",
+        "risk-critical": "#FF4B4B",
+        "risk-high": "#FF8A00",
+        "risk-neutral": "#FFC300",
+        "trust-good": "#00E676",
+        "trust-high": "#00C853"
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', 'sans-serif'],

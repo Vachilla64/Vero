@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/PageWrapper";
+import FeedbackModal from "../components/FeedbackModal";
 import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap, X, ChevronDown, Building2, Check } from "lucide-react";
 
 const BANKS = [
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [reportReason, setReportReason] = useState("");
   const [reportSuccess, setReportSuccess] = useState(false);
   const [sent, setSent] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const activeRequest = useRef(null);
 
@@ -63,10 +65,10 @@ export default function Dashboard() {
     setIsLimitReached(false);
     setIsFocused(false); // Drop focus on submit
 
-    try {
-      const requestId = Date.now();
-      activeRequest.current = requestId;
+    const requestId = Date.now();
+    activeRequest.current = requestId;
 
+    try {
       const response = await api.post("/api/verify", {
         nuban,
         bankCode: selectedBank.code,
@@ -133,8 +135,14 @@ export default function Dashboard() {
     setSent(true);
     setTimeout(() => {
       setSent(false);
-      clearVerdict();
+      setShowFeedbackModal(true);
     }, 1600);
+  };
+  
+  const handleFeedbackSubmit = (feedback) => {
+    // In a real app, send feedback to API
+    setShowFeedbackModal(false);
+    clearVerdict();
   };
 
   // 4a: Home / Search state
@@ -176,20 +184,21 @@ export default function Dashboard() {
                   </div>
                   <span className="text-ink font-bold text-[15px]">{selectedBank.name}</span>
                 </div>
-                <ChevronDown size={20} className="text-secondary" />
+                <ChevronDown size={20} className="text-slate" />
               </div>
 
               {/* NUBAN Input */}
               <div className={`flex items-center gap-3 bg-white rounded-2xl p-4 transition-shadow duration-300 ${isFocused ? 'shadow-app border border-white ring-2 ring-ink/5' : 'shadow-card-sm'}`}>
-                <span className="text-secondary text-lg font-medium">⌕</span>
-                <input 
-                  type="text" 
+                <Search size={18} className="text-slate shrink-0" />
+                <input
+                  type="text"
+                  inputMode="numeric"
                   maxLength="10"
                   value={nuban}
                   onFocus={() => setIsFocused(true)}
                   onChange={(e) => setNuban(e.target.value.replace(/\D/g, ''))}
                   placeholder="Account number"
-                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-secondary/70"
+                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-slate/70"
                   disabled={isSubmitting}
                 />
               </div>
@@ -198,27 +207,29 @@ export default function Dashboard() {
             {/* Amount Input (Optional, appears on focus or if filled) */}
             {(isFocused || amount || nuban.length === 10) && (
               <div className={`flex items-center gap-3 bg-white rounded-2xl p-4 transition-all duration-300 animate-fade-in ${isFocused ? 'shadow-app border border-white' : 'shadow-card-sm'}`}>
-                <span className="text-secondary text-lg font-medium">₦</span>
-                <input 
-                  type="number" 
+                <span className="text-slate text-lg font-medium">₦</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
                   value={amount}
                   onFocus={() => setIsFocused(true)}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
                   placeholder="Amount (Optional)"
-                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-secondary/70"
+                  className="flex-1 bg-transparent outline-none text-ink font-bold text-[16px] placeholder-slate/70"
                   disabled={isSubmitting}
                 />
               </div>
             )}
             
             {error && (
-              <div className="p-3 bg-trust-red/10 border border-trust-red/20 text-trust-red text-sm rounded-xl font-medium animate-fade-in">
+              <div className="p-3 bg-risk-critical/10 border border-risk-critical/20 text-risk-critical text-sm rounded-xl font-medium animate-fade-in">
                 {error}
               </div>
             )}
 
             {isSubmitting ? (
-              <button disabled className="w-full bg-ink text-white font-semibold py-4 rounded-full mt-2 opacity-70">
+              <button disabled className="w-full bg-ink text-white font-semibold py-4 rounded-full mt-2 opacity-70 flex items-center justify-center gap-2.5">
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
                 Analyzing Risk...
               </button>
             ) : (
@@ -228,7 +239,7 @@ export default function Dashboard() {
                   disabled={nuban.length !== 10}
                   className={`w-full font-semibold py-4 rounded-full mt-2 transition-all duration-300 animate-fade-in ${
                     nuban.length === 10 
-                    ? 'bg-trust-green text-white shadow-btn-green translate-y-0 opacity-100' 
+                    ? 'bg-trust-high text-white shadow-btn-green translate-y-0 opacity-100' 
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-80'
                   }`}
                 >
@@ -241,35 +252,35 @@ export default function Dashboard() {
           {/* Recent Lookups (Fade out when focused) */}
           <div className={`transition-opacity duration-300 ${isFocused ? 'opacity-30' : 'opacity-100'}`}>
             <div className="flex items-center justify-between mt-8 mb-4">
-              <div className="text-[12px] font-bold text-secondary uppercase tracking-[0.1em]">Recent</div>
-              <div className="text-[11px] font-bold text-trust-green bg-trust-green/10 px-2 py-0.5 rounded-md">
+              <div className="text-[12px] font-bold text-slate uppercase tracking-[0.1em]">Recent</div>
+              <div className="text-[11px] font-bold text-trust-high bg-trust-high/10 px-2 py-0.5 rounded-md">
                 {user?.isPremium ? "Pro · Unlimited" : `${user?.lookupsRemaining ?? 0} left today`}
               </div>
             </div>
             
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(BANKS.find(b => b.code === "032") || BANKS[0]); }}>
-                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-green text-base relative">
+                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-high text-base relative">
                   C
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-green border-2 border-white"></div>
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-high border-2 border-white"></div>
                 </div>
                 <div className="flex-1">
                   <div className="text-[15px] font-bold text-ink">Clean User</div>
-                  <div className="text-[12.5px] text-secondary font-medium">Union Bank · ••••0007</div>
+                  <div className="text-[12.5px] text-slate font-medium">Union Bank · ••••0007</div>
                 </div>
-                <div className="text-[13px] font-bold text-trust-green bg-trust-green/10 px-2 py-1 rounded-lg">100</div>
+                <div className="text-[13px] font-bold text-trust-high bg-trust-high/10 px-2 py-1 rounded-lg">100</div>
               </div>
               
               <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(BANKS.find(b => b.code === "058") || BANKS[0]); }}>
-                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-red text-base relative">
+                <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-risk-critical text-base relative">
                   E
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-trust-red border-2 border-white"></div>
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-risk-critical border-2 border-white"></div>
                 </div>
                 <div className="flex-1">
                   <div className="text-[15px] font-bold text-ink">Ella Stores</div>
-                  <div className="text-[12.5px] text-secondary font-medium">GTBank · ••••3210</div>
+                  <div className="text-[12.5px] text-slate font-medium">GTBank · ••••3210</div>
                 </div>
-                <div className="text-[13px] font-bold text-trust-red bg-trust-red/10 px-2 py-1 rounded-lg">15</div>
+                <div className="text-[13px] font-bold text-risk-critical bg-risk-critical/10 px-2 py-1 rounded-lg">15</div>
               </div>
             </div>
           </div>
@@ -282,7 +293,7 @@ export default function Dashboard() {
             <div className="bg-surface w-full max-w-md h-[70vh] sm:h-auto sm:max-h-[70vh] sm:rounded-[24px] rounded-t-[32px] flex flex-col p-0 shadow-app relative animate-fade-in z-10 overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <div className="font-bold text-[16px] text-ink">Select Bank</div>
-                <button onClick={() => setShowBankSelector(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-secondary hover:bg-gray-200">
+                <button onClick={() => setShowBankSelector(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate hover:bg-gray-200">
                   <X size={18} />
                 </button>
               </div>
@@ -299,11 +310,11 @@ export default function Dashboard() {
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${bank.bg} ${bank.color}`}>
                       <Building2 size={18} />
                     </div>
-                    <span className={`font-bold text-[15px] ${selectedBank.code === bank.code ? 'text-ink' : 'text-secondary'}`}>
+                    <span className={`font-bold text-[15px] ${selectedBank.code === bank.code ? 'text-ink' : 'text-slate'}`}>
                       {bank.name}
                     </span>
                     {selectedBank.code === bank.code && (
-                      <div className="ml-auto w-5 h-5 rounded-full bg-trust-green text-white flex items-center justify-center text-xs">
+                      <div className="ml-auto w-5 h-5 rounded-full bg-trust-high text-white flex items-center justify-center text-xs">
                         ✓
                       </div>
                     )}
@@ -318,18 +329,18 @@ export default function Dashboard() {
         {isLimitReached && (
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
             <div className="bg-surface max-w-sm w-full rounded-[24px] shadow-app p-6 text-center">
-              <div className="w-12 h-12 bg-trust-amber/10 text-trust-amber rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap size={24} className="fill-trust-amber" />
+              <div className="w-12 h-12 bg-risk-neutral/10 text-risk-neutral rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap size={24} className="fill-risk-neutral" />
               </div>
               <h3 className="text-[20px] font-bold text-ink mb-2">Daily Limit Reached</h3>
-              <p className="text-secondary text-sm mb-6 font-medium">
+              <p className="text-slate text-sm mb-6 font-medium">
                 You have used all your free daily checks. Upgrade to Vero Pro now to unlock unlimited instant verifications!
               </p>
               <div className="flex flex-col gap-2">
-                <Link to="/upgrade" className="w-full bg-trust-green text-white font-semibold py-4 rounded-full shadow-btn-green">
+                <Link to="/upgrade" className="w-full bg-trust-high text-white font-semibold py-4 rounded-full shadow-btn-green">
                   Upgrade to Pro
                 </Link>
-                <button onClick={() => setIsLimitReached(false)} className="w-full text-secondary font-semibold py-3 mt-1">
+                <button onClick={() => setIsLimitReached(false)} className="w-full text-slate font-semibold py-3 mt-1">
                   Dismiss
                 </button>
               </div>
@@ -341,13 +352,13 @@ export default function Dashboard() {
   }
 
   // Verdict Screens (2a, 6a, 6b, 6c)
-  let heroGradient = "bg-gradient-to-br from-trust-green to-trust-greenLight";
+  let heroGradient = "bg-gradient-to-br from-trust-high to-trust-good";
   let statusText = "Trusted";
   let statusColor = "text-white";
   let fgColor = "text-white";
-  let btnStyle = "bg-trust-green shadow-btn-green text-white";
+  let btnStyle = "bg-trust-high shadow-btn-green text-white";
   let avatarBg = "bg-surface";
-  let avatarColor = "text-trust-green";
+  let avatarColor = "text-trust-high";
   
   const score = trustData.score;
   const isUnverified = trustData.flags.includes("unknown_account");
@@ -357,20 +368,20 @@ export default function Dashboard() {
     statusText = "Unverified";
     fgColor = "text-white";
     btnStyle = "bg-ink text-white shadow-app";
-    avatarColor = "text-secondary";
+    avatarColor = "text-slate";
   } else if (score < 30) {
-    heroGradient = "bg-gradient-to-br from-trust-red to-red-400";
+    heroGradient = "bg-gradient-to-br from-risk-critical to-red-400";
     statusText = "High risk";
     fgColor = "text-white";
-    btnStyle = "bg-trust-red text-white shadow-btn-red";
-    avatarColor = "text-trust-red";
+    btnStyle = "bg-risk-critical text-white shadow-btn-red";
+    avatarColor = "text-risk-critical";
   } else if (score < 70) {
-    heroGradient = "bg-gradient-to-br from-trust-amber to-yellow-300";
+    heroGradient = "bg-gradient-to-br from-risk-neutral to-yellow-300";
     statusText = "Caution";
     fgColor = "text-amber-900";
     statusColor = "text-amber-900";
-    btnStyle = "bg-trust-amber text-amber-900 shadow-btn-amber";
-    avatarColor = "text-trust-amber";
+    btnStyle = "bg-risk-neutral text-amber-900 shadow-btn-amber";
+    avatarColor = "text-risk-neutral";
   }
 
   return (
@@ -378,11 +389,11 @@ export default function Dashboard() {
       {sent && (
         <div className="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
           <div className="bg-white rounded-[24px] px-8 py-7 flex flex-col items-center gap-3 shadow-app mx-6">
-            <div className="w-14 h-14 rounded-full bg-trust-green text-white flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-trust-high text-white flex items-center justify-center">
               <Check size={28} strokeWidth={3} />
             </div>
             <div className="font-bold text-[16px] text-ink">Transfer confirmed</div>
-            <div className="text-secondary text-[13px] font-medium">Saved to your history</div>
+            <div className="text-slate text-[13px] font-medium">Saved to your history</div>
           </div>
         </div>
       )}
@@ -404,7 +415,7 @@ export default function Dashboard() {
         {/* Hero Score */}
         <div className="flex flex-col items-center mt-5 relative">
           <div className={`font-bold text-[12px] tracking-[0.14em] uppercase ${statusColor} opacity-90`}>{statusText}</div>
-          <div className={`font-extrabold text-[120px] leading-none tracking-tight ${statusColor} mt-2`}>
+          <div className={`font-extrabold leading-none tracking-tight ${statusColor} mt-2 ${isUnverified ? 'text-[44px] py-9' : 'text-[120px]'}`}>
             {isUnverified ? "No data" : score}
           </div>
           
@@ -426,7 +437,7 @@ export default function Dashboard() {
           </div>
           <div>
             <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Name not on file"}</div>
-            <div className="text-[14px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
+            <div className="text-[14px] text-slate font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
           </div>
         </div>
 
@@ -438,8 +449,8 @@ export default function Dashboard() {
         <div className="flex flex-wrap gap-2 mb-auto">
           {trustData.breakdown && trustData.breakdown.filter(b => b.points !== 0 && b.points !== 100 && b.signal !== 'score_clamped').map((b, i) => (
             <span key={i} className={`font-semibold text-[13px] px-3.5 py-2 rounded-xl ${
-              b.points < -20 ? 'bg-trust-red/10 text-trust-red border border-trust-red/20' :
-              b.points < 0 ? 'bg-trust-amber/10 text-amber-700 border border-trust-amber/20' :
+              b.points < -20 ? 'bg-risk-critical/10 text-risk-critical border border-risk-critical/20' :
+              b.points < 0 ? 'bg-risk-neutral/10 text-amber-700 border border-risk-neutral/20' :
               'bg-surface border border-gray-200 text-ink'
             }`}>
               {b.reason}
@@ -457,7 +468,7 @@ export default function Dashboard() {
             <button onClick={handleProceed} className={`w-full font-semibold py-4 rounded-full text-[16px] ${btnStyle} flex items-center justify-center gap-3`}>
               {score >= 70 ? (
                 <>
-                  <div className="w-8 h-8 rounded-full bg-white text-trust-green flex items-center justify-center text-xl pb-0.5">›</div>
+                  <div className="w-8 h-8 rounded-full bg-white text-trust-high flex items-center justify-center text-xl pb-0.5">›</div>
                   Slide to send
                 </>
               ) : isUnverified ? "Proceed carefully" : "Proceed with caution"}
@@ -466,7 +477,7 @@ export default function Dashboard() {
 
           <button
             onClick={score < 30 ? handleProceed : () => setShowReportModal(true)}
-            className="w-full text-center mt-4 text-secondary font-semibold text-[13px]"
+            className="w-full text-center mt-4 text-slate font-semibold text-[13px]"
           >
             {score < 30 ? "Send anyway" : "Report this account"}
           </button>
@@ -478,7 +489,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
           <div className="bg-surface w-full max-w-md h-[85vh] sm:h-auto sm:rounded-[24px] rounded-t-[32px] flex flex-col p-6 shadow-app">
             <div className="flex items-center justify-between mb-5">
-              <button onClick={() => setShowReportModal(false)} className="text-secondary font-semibold text-[15px]">‹ Back</button>
+              <button onClick={() => setShowReportModal(false)} className="text-slate font-semibold text-[15px]">‹ Back</button>
               <div className="font-bold text-[15px] text-ink">Report account</div>
               <div className="w-8"></div>
             </div>
@@ -487,11 +498,11 @@ export default function Dashboard() {
               <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-ink text-[16px]">{trustData.accountName ? trustData.accountName.charAt(0) : "?"}</div>
               <div>
                 <div className="font-bold text-[15px] text-ink">{trustData.accountName || "Name not on file"}</div>
-                <div className="text-[12.5px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
+                <div className="text-[12.5px] text-slate font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
               </div>
             </div>
 
-            <div className="text-[11px] font-bold text-secondary uppercase tracking-widest mb-3 mt-2">What happened?</div>
+            <div className="text-[11px] font-bold text-slate uppercase tracking-widest mb-3 mt-2">What happened?</div>
             <div className="flex flex-col gap-2 mb-5">
               {[
                 { id: "scam", label: "Fake vendor / paid, never delivered" },
@@ -503,12 +514,12 @@ export default function Dashboard() {
                   key={opt.id}
                   onClick={() => setReportReason(opt.id)}
                   className={`flex items-center justify-between rounded-xl p-3.5 cursor-pointer border-[1.5px] bg-white ${
-                    reportReason === opt.id ? 'border-trust-red' : 'border-gray-200'
+                    reportReason === opt.id ? 'border-risk-critical' : 'border-gray-200'
                   }`}
                 >
                   <span className="font-semibold text-[14.5px] text-ink">{opt.label}</span>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    reportReason === opt.id ? 'bg-trust-red text-white' : 'border-[1.5px] border-gray-200'
+                    reportReason === opt.id ? 'bg-risk-critical text-white' : 'border-[1.5px] border-gray-200'
                   }`}>
                     {reportReason === opt.id && <span className="text-xs">✓</span>}
                   </div>
@@ -516,12 +527,12 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <div className="text-[11px] font-bold text-secondary uppercase tracking-widest mb-3 mt-auto">Proof (optional but helps)</div>
-            <div className="border-[1.5px] border-dashed border-gray-300 rounded-2xl p-5 text-center text-secondary font-semibold text-[13px] bg-white cursor-pointer hover:bg-gray-50">
+            <div className="text-[11px] font-bold text-slate uppercase tracking-widest mb-3 mt-auto">Proof (optional but helps)</div>
+            <div className="border-[1.5px] border-dashed border-gray-300 rounded-2xl p-5 text-center text-slate font-semibold text-[13px] bg-white cursor-pointer hover:bg-gray-50">
               + Add screenshot or receipt
             </div>
 
-            {error && <div className="text-trust-red text-sm text-center font-medium mt-4">{error}</div>}
+            {error && <div className="text-risk-critical text-sm text-center font-medium mt-4">{error}</div>}
             
             <div className="mt-5">
               <button 
@@ -531,13 +542,24 @@ export default function Dashboard() {
               >
                 {isReporting ? "Submitting..." : reportSuccess ? "Submitted!" : "Submit report"}
               </button>
-              <div className="text-center mt-3 text-secondary text-[12px] font-medium leading-relaxed px-4">
+              <div className="text-center mt-3 text-slate text-[12px] font-medium leading-relaxed px-4">
                 Reports are reviewed and shared across the network to protect others.
               </div>
             </div>
           </div>
         </div>
       )}
+      
+      {/* Feedback Modal */}
+      <AnimatePresence>
+        {showFeedbackModal && (
+          <FeedbackModal 
+            isOpen={showFeedbackModal} 
+            onClose={() => handleFeedbackSubmit(null)} 
+            onSubmit={handleFeedbackSubmit} 
+          />
+        )}
+      </AnimatePresence>
     </PageWrapper>
   );
 }

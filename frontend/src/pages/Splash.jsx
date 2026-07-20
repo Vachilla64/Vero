@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Splash({ onFinish }) {
@@ -17,7 +16,7 @@ export default function Splash({ onFinish }) {
   }, [user, isLoading, onFinish]);
 
   return (
-    <div className="h-full bg-trust-green flex flex-col items-center justify-center font-sans relative overflow-hidden animate-[fade-in_0.3s_ease-out]">
+    <div className="h-full bg-trust-high flex flex-col items-center justify-center font-sans relative overflow-hidden animate-[fade-in_0.3s_ease-out]">
       {/* Background Decor */}
       <div className="absolute top-[-20%] right-[-20%] w-[150%] h-[80%] bg-gradient-to-b from-white/20 to-transparent rounded-[100%] blur-3xl opacity-40 pointer-events-none" />
 
