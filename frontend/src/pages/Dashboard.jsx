@@ -140,7 +140,10 @@ export default function Dashboard() {
         
         <div className="flex flex-col h-full px-6 relative z-0">
           <div className="flex items-center justify-between mb-5">
-            <div className="font-extrabold text-[17px] text-ink tracking-wider">VERO</div>
+            <div className="flex items-center gap-2">
+              <img src="/vero-logo.png" alt="Vero Logo" className="w-5 h-5" />
+              <div className="font-extrabold text-[17px] text-ink tracking-wider">VERO</div>
+            </div>
             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold text-ink text-sm shadow-card-xs">
               {user?.name?.charAt(0) || "U"}
             </div>
@@ -371,7 +374,10 @@ export default function Dashboard() {
         {/* Nav */}
         <div className="flex items-center justify-between relative pt-12">
           <button onClick={clearVerdict} className={`font-semibold text-[15px] ${fgColor} opacity-80`}>‹ Back</button>
-          <div className={`font-extrabold text-[15px] tracking-wider ${fgColor}`}>VERO</div>
+          <div className="flex items-center gap-2">
+            <img src="/vero-logo.png" alt="Vero Logo" className="w-5 h-5 brightness-0 invert" />
+            <div className={`font-extrabold text-[15px] tracking-wider ${fgColor}`}>VERO</div>
+          </div>
           <div className={`font-bold text-[22px] ${fgColor} opacity-80`}>⋯</div>
         </div>
 

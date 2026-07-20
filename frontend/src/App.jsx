@@ -14,9 +14,13 @@ import Onboarding from "./pages/Onboarding";
 import TopBar from "./components/TopBar";
 import BottomNav from "./components/BottomNav";
 
+import Splash from "./pages/Splash";
+
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
   
+  // We don't render Splash here anymore, the root handles it.
+  // But just in case auth is still loading during normal navigation:
   if (isLoading) return <div className="h-screen w-full flex items-center justify-center bg-canvas">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   
@@ -113,11 +117,29 @@ function AppRoutes() {
   );
 }
 
+import { useState, useEffect } from "react";
+
+function AppContent() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-canvas p-0 sm:p-4 md:p-8">
+        <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-surface relative overflow-hidden sm:rounded-[3rem] sm:shadow-app">
+          <Splash onFinish={() => setShowSplash(false)} />
+        </div>
+      </div>
+    );
+  }
+
+  return <AppRoutes />;
+}
+
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <AppRoutes />
+        <AppContent />
       </Router>
     </AuthProvider>
   );

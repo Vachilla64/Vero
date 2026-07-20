@@ -16,8 +16,8 @@ export default function Onboarding() {
 
       <div className="flex-1 flex flex-col justify-end p-8 pb-12 z-10 animate-[fade-in_0.5s_ease-out]">
         <div className="bg-white rounded-[32px] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.2)]">
-          <div className="flex items-center justify-center w-16 h-16 bg-trust-green/10 text-trust-green rounded-2xl mb-6">
-            <ShieldCheck size={32} strokeWidth={2.5} />
+          <div className="flex items-center justify-center w-16 h-16 bg-trust-green/10 text-trust-green rounded-2xl mb-6 p-3">
+            <img src="/vero-logo.png" alt="Vero Logo" className="w-full h-full object-contain" />
           </div>
           
           <h1 className="text-[28px] font-extrabold text-ink leading-tight mb-4 tracking-tight">
