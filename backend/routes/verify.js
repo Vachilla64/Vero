@@ -27,7 +27,9 @@ router.post('/', authenticateJWT, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (!userObj.isPremium) {
+    // API-key (B2B) callers integrate at scale — the consumer free-tier cap
+    // does not apply to them, only to the free web/mobile app.
+    if (!userObj.isPremium && !req.user.isApi) {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
