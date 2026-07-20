@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/PageWrapper";
-import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap, X, ChevronDown, Building2 } from "lucide-react";
+import { Search, AlertTriangle, AlertCircle, ShieldCheck, Zap, X, ChevronDown, Building2, Check } from "lucide-react";
 
 const BANKS = [
   { code: "044", name: "Access Bank", color: "text-orange-500", bg: "bg-orange-500/10" },
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [isReporting, setIsReporting] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportSuccess, setReportSuccess] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const activeRequest = useRef(null);
 
@@ -126,6 +127,14 @@ export default function Dashboard() {
     setTrustData(null);
     setNuban("");
     setAmount("");
+  };
+
+  const handleProceed = () => {
+    setSent(true);
+    setTimeout(() => {
+      setSent(false);
+      clearVerdict();
+    }, 1600);
   };
 
   // 4a: Home / Search state
@@ -234,7 +243,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mt-8 mb-4">
               <div className="text-[12px] font-bold text-secondary uppercase tracking-[0.1em]">Recent</div>
               <div className="text-[11px] font-bold text-trust-green bg-trust-green/10 px-2 py-0.5 rounded-md">
-                {user?.lookupsRemaining || 0} left today
+                {user?.isPremium ? "Pro · Unlimited" : `${user?.lookupsRemaining ?? 0} left today`}
               </div>
             </div>
             
@@ -366,6 +375,17 @@ export default function Dashboard() {
 
   return (
     <PageWrapper className="bg-white overflow-hidden p-0 !pt-0">
+      {sent && (
+        <div className="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+          <div className="bg-white rounded-[24px] px-8 py-7 flex flex-col items-center gap-3 shadow-app mx-6">
+            <div className="w-14 h-14 rounded-full bg-trust-green text-white flex items-center justify-center">
+              <Check size={28} strokeWidth={3} />
+            </div>
+            <div className="font-bold text-[16px] text-ink">Transfer confirmed</div>
+            <div className="text-secondary text-[13px] font-medium">Saved to your history</div>
+          </div>
+        </div>
+      )}
       <div className={`relative ${heroGradient} px-7 pb-10 rounded-b-[40px] overflow-hidden`}>
         {/* Decorative Circles */}
         <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-white/10"></div>
@@ -402,10 +422,10 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col px-7 pt-7 pb-10">
         <div className="flex items-center gap-3 mb-5">
           <div className={`w-[52px] h-[52px] rounded-2xl ${avatarBg} flex items-center justify-center font-bold text-[20px] ${avatarColor}`}>
-            {isUnverified ? "?" : (trustData.accountName ? trustData.accountName.charAt(0) : "U")}
+            {trustData.accountName ? trustData.accountName.charAt(0) : "?"}
           </div>
           <div>
-            <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Unknown User"}</div>
+            <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Name not on file"}</div>
             <div className="text-[14px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
           </div>
         </div>
@@ -434,7 +454,7 @@ export default function Dashboard() {
               Report this account
             </button>
           ) : (
-            <button className={`w-full font-semibold py-4 rounded-full text-[16px] ${btnStyle} flex items-center justify-center gap-3`}>
+            <button onClick={handleProceed} className={`w-full font-semibold py-4 rounded-full text-[16px] ${btnStyle} flex items-center justify-center gap-3`}>
               {score >= 70 ? (
                 <>
                   <div className="w-8 h-8 rounded-full bg-white text-trust-green flex items-center justify-center text-xl pb-0.5">›</div>
@@ -443,8 +463,11 @@ export default function Dashboard() {
               ) : isUnverified ? "Proceed carefully" : "Proceed with caution"}
             </button>
           )}
-          
-          <button onClick={() => setShowReportModal(true)} className="w-full text-center mt-4 text-secondary font-semibold text-[13px]">
+
+          <button
+            onClick={score < 30 ? handleProceed : () => setShowReportModal(true)}
+            className="w-full text-center mt-4 text-secondary font-semibold text-[13px]"
+          >
             {score < 30 ? "Send anyway" : "Report this account"}
           </button>
         </div>
@@ -461,9 +484,9 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 mb-5 shadow-card-xs">
-              <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-trust-red text-[16px]">C</div>
+              <div className="w-[42px] h-[42px] rounded-xl bg-surface flex items-center justify-center font-bold text-ink text-[16px]">{trustData.accountName ? trustData.accountName.charAt(0) : "?"}</div>
               <div>
-                <div className="font-bold text-[15px] text-ink">{trustData.accountName || "Unknown User"}</div>
+                <div className="font-bold text-[15px] text-ink">{trustData.accountName || "Name not on file"}</div>
                 <div className="text-[12.5px] text-secondary font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
               </div>
             </div>
