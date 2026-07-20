@@ -4,9 +4,9 @@ export default function TrustScoreRing({ score, isLoading }) {
   // Score mapping logic
   const getTrustDetails = (s) => {
     if (s >= 80) return { color: "#00C853", label: "High Trust" };
-    if (s >= 60) return { color: "#4CAF50", label: "Good" };
-    if (s >= 40) return { color: "#FFC107", label: "Medium Risk" };
-    if (s >= 30) return { color: "#FF9800", label: "High Risk" };
+    if (s >= 60) return { color: "#00E676", label: "Good" };
+    if (s >= 40) return { color: "#FFC300", label: "Medium Risk" };
+    if (s >= 30) return { color: "#FF8A00", label: "High Risk" };
     return { color: "#FF4B4B", label: "Critical Risk" };
   };
 
