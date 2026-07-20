@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { twMerge } from "tailwind-merge";
 
 const pageVariants = {
   initial: {
@@ -29,7 +30,7 @@ export default function PageWrapper({ children, className = "" }) {
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
-      className={`absolute inset-0 overflow-y-auto overflow-x-hidden pt-16 pb-24 no-scrollbar ${className}`}
+      className={twMerge("absolute inset-0 overflow-y-auto overflow-x-hidden pt-16 pb-24 no-scrollbar", className)}
     >
       {children}
     </motion.div>
