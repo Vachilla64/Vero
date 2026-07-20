@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import api from "../lib/api";
 import { AlertCircle, Search, ShieldCheck } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
@@ -24,10 +25,9 @@ export default function History() {
   }, []);
 
   const getScoreVisuals = (score) => {
-    if (score < 30) return { color: "text-[#FF4B4B]", bg: "bg-[#FF4B4B]/10" };
-    if (score < 50) return { color: "text-[#FF4B4B]", bg: "bg-[#FF4B4B]/10" };
-    if (score < 70) return { color: "text-[#FFC300]", bg: "bg-[#FFC300]/12" };
-    return { color: "text-[#00C853]", bg: "bg-[#00C853]/10" };
+    if (score < 50) return { color: "text-trust-red", bg: "bg-trust-red/10" };
+    if (score < 70) return { color: "text-trust-amber", bg: "bg-trust-amber/10" };
+    return { color: "text-trust-green", bg: "bg-trust-green/10" };
   };
 
   const filteredHistory = history.filter((item) =>
@@ -56,16 +56,12 @@ export default function History() {
   const grouped = groupHistory(filteredHistory);
 
   return (
-    <PageWrapper className="bg-canvas min-h-screen" style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}>
-      <div className="flex flex-col h-full px-6 pt-4 pb-6 max-w-md mx-auto">
+    <PageWrapper className="bg-canvas min-h-screen">
+      <div className="flex flex-col h-full px-5 pt-12 pb-28 max-w-md mx-auto overflow-y-auto no-scrollbar">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-secondary text-[15px] font-semibold flex items-center cursor-pointer hover:text-ink transition-colors">
-            ‹ Back
-          </div>
-          <div className="font-bold text-[15px] text-ink">Lookup history</div>
-          <div className="w-[50px]"></div>
+        <div className="mb-6">
+          <div className="font-bold text-[26px] text-ink">Activity</div>
         </div>
 
         {/* Search (Preserved for functionality) */}
@@ -76,7 +72,7 @@ export default function History() {
             placeholder="Search by NUBAN..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value.replace(/\D/g, ''))}
-            className="w-full pl-9 pr-4 py-2.5 bg-surface border-none shadow-sm hover:shadow-card rounded-xl text-sm text-ink placeholder:text-secondary focus:outline-none focus:ring-1 focus:ring-ink transition-shadow"
+            className="w-full pl-9 pr-4 py-3 bg-white border-none shadow-card-xs hover:shadow-card-sm rounded-2xl text-[15px] font-bold text-ink placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-ink/10 transition-all"
           />
         </div>
 
@@ -86,7 +82,7 @@ export default function History() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ink"></div>
           </div>
         ) : error ? (
-          <div className="p-4 bg-[#FF4B4B]/10 text-[#FF4B4B] text-sm rounded-xl flex items-center gap-2">
+          <div className="p-4 bg-trust-red/10 text-trust-red text-sm rounded-xl flex items-center gap-2">
             <AlertCircle size={18} />
             <p>{error}</p>
           </div>
@@ -120,20 +116,20 @@ export default function History() {
                       return (
                         <div 
                           key={item.id} 
-                          className="flex items-center gap-3 bg-surface rounded-2xl p-[12px_14px] shadow-sm hover:shadow-card transition-shadow cursor-pointer"
+                          className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs hover:shadow-card-sm transition-shadow cursor-pointer"
                         >
-                          <div className={`w-[38px] h-[38px] shrink-0 rounded-[12px] bg-canvas flex items-center justify-center font-bold text-[14px] ${color}`}>
+                          <div className={`w-[42px] h-[42px] shrink-0 rounded-[12px] bg-canvas flex items-center justify-center font-bold text-[16px] ${color}`}>
                             {initial}
                           </div>
                           <div className="flex-1 overflow-hidden">
-                            <div className="text-[14.5px] font-bold text-ink truncate leading-tight mb-0.5">
+                            <div className="text-[15px] font-bold text-ink truncate mb-0.5">
                               {displayName}
                             </div>
-                            <div className="text-[12px] text-secondary font-medium truncate">
+                            <div className="text-[12.5px] text-slate font-medium truncate">
                               {displayBank} · {displayNuban} · {timeStr}
                             </div>
                           </div>
-                          <div className={`text-[13px] font-bold ${color} ${bg} px-2.5 py-1 rounded-full shrink-0`}>
+                          <div className={`text-[13px] font-bold ${color} ${bg} px-2.5 py-1 rounded-lg shrink-0`}>
                             {item.score}
                           </div>
                         </div>

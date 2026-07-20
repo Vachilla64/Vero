@@ -1,174 +1,111 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-
+import { Link, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/PageWrapper";
+import { User, Mail, Lock, ChevronRight, LogOut, Zap, ShieldCheck } from "lucide-react";
 
 export default function Settings() {
-  const { user, refreshProfile, logout } = useAuth();
-  const [name, setName] = useState(user?.name || "");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const [updating, setUpdating] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (password && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setUpdating(true);
-
-    try {
-      const updatePayload = { name };
-      if (password) {
-        updatePayload.password = password;
-      }
-
-      await api.post("/api/user/settings", updatePayload);
-      
-      setSuccess("Profile settings updated successfully!");
-      setPassword("");
-      setConfirmPassword("");
-      await refreshProfile(); // Sync new profile state (name)
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to update settings.");
-    } finally {
-      setUpdating(false);
-    }
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
-    <PageWrapper className="bg-canvas min-h-screen font-poppins">
-      <div className="flex flex-col flex-1 px-[26px] pb-[26px] pt-4 max-w-md mx-auto w-full min-h-[calc(100vh-60px)]">
-        
-        {/* Top Nav */}
-        <div className="flex items-center justify-between mb-[22px]">
-          <Link to="/" className="text-secondary text-[15px] font-semibold no-underline">‹ Back</Link>
-          <div className="font-bold text-[15px] text-ink">Settings</div>
-          <div className="w-[22px]"></div>
+    <PageWrapper className="bg-canvas min-h-screen pt-12 pb-28 px-5 overflow-y-auto no-scrollbar">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="font-bold text-[26px] text-ink">Profile</div>
+      </div>
+
+      {/* Profile Header */}
+      <div className="flex items-center gap-4 bg-white rounded-[24px] p-5 mb-8 shadow-card-xs">
+        <div className="w-[60px] h-[60px] rounded-[18px] bg-canvas flex items-center justify-center font-bold text-[22px] text-ink shadow-sm">
+          {user?.name?.charAt(0) || "U"}
         </div>
-
-        {/* Profile Card */}
-        <div className="flex items-center gap-[14px] bg-surface rounded-[20px] p-[18px] shadow-card mb-[22px]">
-          <div className="w-[52px] h-[52px] rounded-2xl bg-canvas flex items-center justify-center text-[20px] font-bold text-ink uppercase">
-            {user?.name ? user.name.charAt(0) : "U"}
-          </div>
-          <div className="flex-1">
-            <div className="text-[16px] font-bold text-ink">{user?.name || "User"}</div>
-            <div className="text-[12.5px] font-medium text-secondary">{user?.email || "No email"}</div>
-          </div>
-          <span className="bg-canvas text-ink border border-gray-100 rounded-xl px-3 py-1.5 text-[12px] font-medium">Edit</span>
+        <div className="flex-1">
+          <div className="font-bold text-[18px] text-ink">{user?.name || "User"}</div>
+          <div className="text-[13px] text-slate font-medium">{user?.email || "user@example.com"}</div>
         </div>
+        <button className="text-[13px] font-bold text-trust-high bg-trust-high/10 px-3.5 py-1.5 rounded-full hover:bg-trust-high/20 transition-colors">
+          Edit
+        </button>
+      </div>
 
-        {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-100 text-trust-good text-[13px] rounded-xl font-medium">
-            {success}
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 text-trust-critical text-[13px] rounded-xl font-medium">
-            {error}
-          </div>
-        )}
-
-        {/* Account Section */}
-        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Account</div>
-        <form onSubmit={handleUpdateProfile} className="flex flex-col bg-surface rounded-[18px] overflow-hidden mb-[22px] shadow-sm border border-gray-50">
-          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
-            <label className="text-[14.5px] font-semibold text-ink">Display name</label>
-            <input 
-              type="text" 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
-              className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[160px]" 
-            />
-          </div>
-          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
-            <span className="text-[14.5px] font-semibold text-ink">Email</span>
-            <span className="text-secondary text-[14px]">{user?.email || "Email"}</span>
-          </div>
-          <div className="flex items-center justify-between p-[15px] px-[16px] border-b border-canvas">
-            <label className="text-[14.5px] font-semibold text-ink">New Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[120px]" 
-            />
-          </div>
-          {password && (
-            <div className="flex items-center justify-between p-[15px] px-[16px]">
-              <label className="text-[14.5px] font-semibold text-ink">Confirm Password</label>
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                value={confirmPassword} 
-                onChange={(e) => setConfirmPassword(e.target.value)} 
-                className="text-secondary text-[14px] text-right bg-transparent outline-none focus:text-ink w-[120px]" 
-              />
+      {/* Account Settings */}
+      <div className="mb-8">
+        <div className="text-[12px] font-bold text-slate uppercase tracking-widest mb-3 px-2">Account</div>
+        <div className="bg-white rounded-[24px] overflow-hidden shadow-card-xs">
+          <div className="flex items-center justify-between p-4 border-b border-hairline hover:bg-canvas/50 cursor-pointer transition-colors">
+            <div className="flex items-center gap-3 text-ink">
+              <User size={18} className="text-slate" />
+              <span className="font-semibold text-[15px]">Display name</span>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-slate font-medium">{user?.name || "User"}</span>
+              <ChevronRight size={16} className="text-slate" />
+            </div>
+          </div>
           
-          {(name !== user?.name || password) && (
-            <div className="p-3 bg-canvas/30">
-              <button 
-                type="submit" 
-                disabled={updating} 
-                className="w-full bg-[#00C853] text-white font-bold py-3 rounded-xl text-[14px] shadow-[0_8px_20px_rgba(0,200,83,0.25)] hover:bg-[#00b047] transition-all"
-              >
-                {updating ? "Saving..." : "Save Changes"}
-              </button>
+          <div className="flex items-center justify-between p-4 border-b border-hairline hover:bg-canvas/50 cursor-pointer transition-colors">
+            <div className="flex items-center gap-3 text-ink">
+              <Mail size={18} className="text-slate" />
+              <span className="font-semibold text-[15px]">Email</span>
             </div>
-          )}
-        </form>
-
-        {/* Plan Section */}
-        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Plan</div>
-        <Link to="/upgrade" className="flex items-center gap-[14px] bg-surface rounded-[18px] p-4 shadow-card no-underline mb-6">
-          <div className="w-11 h-11 rounded-[14px] bg-[rgba(255,195,0,0.14)] flex items-center justify-center text-[18px]">⚡</div>
-          <div className="flex-1">
-            <div className="text-[14.5px] font-bold text-ink">{user?.isPremium ? "Vero Pro" : "Free plan"}</div>
-            <div className="text-[12px] font-medium text-secondary">{user?.isPremium ? "Unlimited lookups" : "15 lookups / day"}</div>
-          </div>
-          {!user?.isPremium && (
-            <span className="bg-ink text-white font-bold text-[12px] py-1.5 px-3 rounded-xl">Upgrade</span>
-          )}
-        </Link>
-
-        {/* Demo Section */}
-        <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-secondary mb-2.5">Demo</div>
-        <Link to="/how-it-works" className="flex items-center gap-[14px] bg-surface rounded-[18px] p-4 shadow-card no-underline mb-6 border border-[#01C38E]/30 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-[#01C38E]/5 rounded-bl-[100%] pointer-events-none"></div>
-          <div className="w-11 h-11 rounded-[14px] bg-[#01C38E]/10 flex items-center justify-center text-[18px]">
-             <span className="text-[#01C38E] text-[20px]">📱</span>
-          </div>
-          <div className="flex-1">
-            <div className="text-[14.5px] font-bold text-ink flex items-center gap-2">
-              OPay Mockup <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold uppercase">Prototype</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-slate font-medium">{user?.email || "user@example.com"}</span>
+              <ChevronRight size={16} className="text-slate" />
             </div>
-            <div className="text-[12px] font-medium text-secondary">Interactive payment journey demo</div>
           </div>
-          <span className="text-secondary font-bold text-lg pr-2">›</span>
-        </Link>
-
-        <div 
-          onClick={logout}
-          className="text-center mt-auto pt-4 text-trust-critical text-[14px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          Log out
+          
+          <div className="flex items-center justify-between p-4 hover:bg-canvas/50 cursor-pointer transition-colors">
+            <div className="flex items-center gap-3 text-ink">
+              <Lock size={18} className="text-slate" />
+              <span className="font-semibold text-[15px]">Password</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-slate font-medium">••••••••</span>
+              <ChevronRight size={16} className="text-slate" />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Plan */}
+      <div className="mb-8">
+        <div className="text-[12px] font-bold text-slate uppercase tracking-widest mb-3 px-2">Plan</div>
+        <div className="bg-white rounded-[24px] p-5 shadow-card-xs flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              {user?.isPremium ? (
+                <ShieldCheck size={18} className="text-trust-high" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-slate/20 flex items-center justify-center text-[10px] font-bold text-slate">Free</div>
+              )}
+              <span className="font-bold text-[16px] text-ink">{user?.isPremium ? "Vero Pro" : "Free plan"}</span>
+            </div>
+            <div className="text-[13px] text-slate font-medium">
+              {user?.isPremium ? "Unlimited lookups & priority alerts" : "15 lookups / day"}
+            </div>
+          </div>
+          
+          {!user?.isPremium && (
+            <Link to="/upgrade" className="bg-ink text-white font-bold text-[13px] px-4 py-2 rounded-full hover:scale-105 transition-transform shadow-card-sm">
+              Upgrade
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Logout */}
+      <button 
+        onClick={handleLogout}
+        className="w-full flex items-center justify-center gap-2 font-bold text-[15px] text-risk-critical bg-white py-4 rounded-[20px] shadow-card-xs hover:bg-risk-critical/5 transition-colors"
+      >
+        <LogOut size={18} />
+        Log out
+      </button>
     </PageWrapper>
   );
 }
