@@ -1,7 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const authenticateJWT = require('../middleware/authMiddleware');
-const { validateNuban, generateFakeName } = require('../utils/nuban');
+const { validateNuban } = require('../utils/nuban');
 const { calculateTrustScore } = require('../utils/scoring');
 const { getExplanation } = require('../utils/llm');
 
@@ -105,7 +105,7 @@ router.post('/', authenticateJWT, async (req, res) => {
       explanation,
       breakdown,
       timesChecked,
-      accountName: account ? (account.name || generateFakeName(nuban)) : generateFakeName(nuban)
+      accountName: account?.name || null
     });
 
   } catch (error) {
