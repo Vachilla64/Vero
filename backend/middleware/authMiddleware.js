@@ -1,10 +1,28 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 
+const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-vero-key-for-dev-only';
 
-const authenticateJWT = (req, res, next) => {
+const authenticateJWT = async (req, res, next) => {
+  const apiKeyHeader = req.headers['x-api-key'];
   const authHeader = req.headers.authorization;
 
+  // 1. Check API Key
+  if (apiKeyHeader) {
+    try {
+      const keyRec = await prisma.apiKey.findUnique({ where: { key: apiKeyHeader } });
+      if (!keyRec || !keyRec.isActive) {
+        return res.status(403).json({ error: 'Invalid or revoked API key' });
+      }
+      req.user = { userId: keyRec.userId, isApi: true };
+      return next();
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal server error verifying API key' });
+    }
+  }
+
+  // 2. Check JWT
   if (authHeader) {
     const token = authHeader.split(' ')[1]; // Bearer <token>
 
@@ -17,7 +35,7 @@ const authenticateJWT = (req, res, next) => {
       next();
     });
   } else {
-    res.status(401).json({ error: 'Authorization header missing' });
+    res.status(401).json({ error: 'Authorization header or x-api-key missing' });
   }
 };
 

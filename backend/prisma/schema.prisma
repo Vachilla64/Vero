@@ -17,6 +17,18 @@ model User {
   accounts      Account[]
   reports       Report[]
   verifications Verification[]
+  apiKeys       ApiKey[]
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
 }
 
 model Account {
