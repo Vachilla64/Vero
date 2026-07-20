@@ -9,6 +9,7 @@ import History from "./pages/History";
 import Settings from "./pages/Settings";
 import Upgrade from "./pages/Upgrade";
 import HowItWorks from "./pages/HowItWorks";
+import Onboarding from "./pages/Onboarding";
 
 import TopBar from "./components/TopBar";
 import BottomNav from "./components/BottomNav";
@@ -43,6 +44,18 @@ function AppRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route 
+          path="/onboarding" 
+          element={
+            <ProtectedRoute>
+              <div className="flex items-center justify-center min-h-screen bg-canvas p-0 sm:p-4 md:p-8">
+                <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-surface relative overflow-hidden sm:rounded-[3rem] sm:shadow-app">
+                  <Onboarding />
+                </div>
+              </div>
+            </ProtectedRoute>
+          } 
+        />
         
         {/* Protected Mobile Pages */}
         <Route 
