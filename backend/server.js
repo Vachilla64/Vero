@@ -27,6 +27,7 @@ const reportRoutes = require('./routes/report');
 const historyRoutes = require('./routes/history');
 const userRoutes = require('./routes/user');
 const developerRoutes = require('./routes/developer');
+const bankRoutes = require('./routes/banks');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/verify', verifyRoutes);
@@ -34,6 +35,7 @@ app.use('/api/report', reportRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/developer', developerRoutes);
+app.use('/api/banks', bankRoutes);
 
 // Fallback for 404
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
