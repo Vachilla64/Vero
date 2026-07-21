@@ -4,21 +4,38 @@ import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/PageWrapper";
 import FeedbackModal from "../components/FeedbackModal";
-import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check, QrCode, ClipboardCheck } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-const BANKS = [
-  { code: "044", name: "Access Bank", color: "text-orange-500", bg: "bg-orange-500/10" },
-  { code: "058", name: "GTBank", color: "text-orange-600", bg: "bg-orange-600/10" },
-  { code: "057", name: "Zenith Bank", color: "text-red-500", bg: "bg-red-500/10" },
-  { code: "033", name: "UBA", color: "text-red-600", bg: "bg-red-600/10" },
-  { code: "011", name: "First Bank", color: "text-blue-800", bg: "bg-blue-800/10" },
-  { code: "032", name: "Union Bank", color: "text-blue-400", bg: "bg-blue-400/10" },
-  { code: "50211", name: "Kuda Bank", color: "text-purple-600", bg: "bg-purple-600/10" },
-  { code: "090267", name: "Kuda Microfinance", color: "text-purple-600", bg: "bg-purple-600/10" },
-  { code: "100004", name: "OPay", color: "text-green-500", bg: "bg-green-500/10" },
-  { code: "090405", name: "Moniepoint", color: "text-blue-600", bg: "bg-blue-600/10" },
-  { code: "100033", name: "Palmpay", color: "text-purple-500", bg: "bg-purple-500/10" },
+// Brand accents for the banks people actually pick most. /api/banks returns
+// 250+ institutions, so anything unmapped falls back to a neutral chip.
+const BANK_STYLES = {
+  "044": { color: "text-orange-500", bg: "bg-orange-500/10" },
+  "058": { color: "text-orange-600", bg: "bg-orange-600/10" },
+  "057": { color: "text-red-500", bg: "bg-red-500/10" },
+  "033": { color: "text-red-600", bg: "bg-red-600/10" },
+  "011": { color: "text-blue-800", bg: "bg-blue-800/10" },
+  "032": { color: "text-blue-400", bg: "bg-blue-400/10" },
+  "50211": { color: "text-purple-600", bg: "bg-purple-600/10" },
+  "100004": { color: "text-green-500", bg: "bg-green-500/10" },
+  "50515": { color: "text-blue-600", bg: "bg-blue-600/10" },
+  "100033": { color: "text-purple-500", bg: "bg-purple-500/10" },
+};
+const DEFAULT_BANK_STYLE = { color: "text-slate", bg: "bg-canvas" };
+const bankStyle = (code) => BANK_STYLES[code] || DEFAULT_BANK_STYLE;
+
+// Shown until /api/banks responds, and if it never does.
+const FALLBACK_BANKS = [
+  { code: "044", name: "Access Bank" },
+  { code: "058", name: "Guaranty Trust Bank" },
+  { code: "057", name: "Zenith Bank" },
+  { code: "033", name: "United Bank For Africa" },
+  { code: "011", name: "First Bank of Nigeria" },
+  { code: "032", name: "Union Bank of Nigeria" },
+  { code: "50211", name: "Kuda Bank" },
+  { code: "100004", name: "OPay" },
+  { code: "50515", name: "Moniepoint MFB" },
+  { code: "100033", name: "PalmPay" },
 ];
 
 export default function Home() {
@@ -27,7 +44,8 @@ export default function Home() {
   // Form state
   const [nuban, setNuban] = useState("");
   const [amount, setAmount] = useState("");
-  const [selectedBank, setSelectedBank] = useState(BANKS[0]);
+  const [selectedBank, setSelectedBank] = useState(FALLBACK_BANKS[0]);
+  const [banks, setBanks] = useState(FALLBACK_BANKS);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trustData, setTrustData] = useState(null);
   const [error, setError] = useState("");
@@ -35,6 +53,8 @@ export default function Home() {
   
   // UI States
   const [showBankSelector, setShowBankSelector] = useState(false);
+  const [showLookup, setShowLookup] = useState(false);
+  const [bankQuery, setBankQuery] = useState("");
   
   // Modals
   const [showReportModal, setShowReportModal] = useState(false);
@@ -49,6 +69,53 @@ export default function Home() {
   useEffect(() => {
     refreshProfile();
   }, []);
+
+  // Live bank list from Paystack (proxied by the backend so the secret key
+  // stays server-side). Keeps FALLBACK_BANKS on any failure.
+  useEffect(() => {
+    let cancelled = false;
+
+    api.get("/api/banks")
+      .then((res) => {
+        const fetched = res.data?.banks;
+        if (cancelled || !Array.isArray(fetched) || fetched.length === 0) return;
+        setBanks(fetched);
+        setSelectedBank((current) =>
+          fetched.find((b) => b.code === current.code) || current
+        );
+      })
+      .catch(() => {
+        // FALLBACK_BANKS is already in state.
+      });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const filteredBanks = bankQuery.trim()
+    ? banks.filter((b) => b.name.toLowerCase().includes(bankQuery.trim().toLowerCase()))
+    : banks;
+
+  const closeLookup = () => {
+    setShowLookup(false);
+    setError("");
+  };
+
+  // Pull the first 10-digit run out of whatever the user copied — bank
+  // details usually arrive as a blob of text with the NUBAN buried in it.
+  const handlePasteDetails = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const match = text.replace(/[\s-]/g, "").match(/\d{10}/);
+      if (match) {
+        setNuban(match[0]);
+        setError("");
+      } else {
+        setError("No 10-digit account number found in your clipboard.");
+      }
+    } catch {
+      setError("Clipboard access was blocked. Type the number instead.");
+    }
+  };
 
   const handleVerify = async (e) => {
     e?.preventDefault();
@@ -128,6 +195,8 @@ export default function Home() {
     setTrustData(null);
     setNuban("");
     setAmount("");
+    // Back from a verdict lands on Home, not the still-open lookup sheet.
+    setShowLookup(false);
   };
 
   const handleProceed = () => {
@@ -200,15 +269,108 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Form Area */}
-          <form 
-            onSubmit={handleVerify} 
-            className="mt-6 flex flex-col gap-3 relative z-0"
+          {/* Primary action — one obvious affordance instead of an inline form */}
+          <button
+            type="button"
+            onClick={() => setShowLookup(true)}
+            className="mt-6 w-full flex items-center gap-4 bg-white rounded-[24px] p-5 text-left shadow-[0_20px_50px_rgba(43,52,69,0.06),0_4px_12px_rgba(43,52,69,0.04)] active:scale-[0.99] transition-transform"
           >
-            <div className="flex flex-col gap-3 bg-white rounded-[24px] p-[22px] shadow-[0_20px_50px_rgba(43,52,69,0.06),0_4px_12px_rgba(43,52,69,0.04)]">
-              
-              <div className="text-[11px] font-bold text-slate uppercase tracking-[0.06em] mb-2">Verify an account</div>
-              
+            <div className="w-12 h-12 rounded-[16px] bg-trust-high/10 flex items-center justify-center shrink-0">
+              <Search size={22} className="text-trust-high" strokeWidth={2.4} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[16.5px] font-bold text-ink leading-tight">Check an account</div>
+              <div className="text-[12.5px] text-slate font-semibold mt-[3px]">Enter a NUBAN before you send</div>
+            </div>
+            <span className="text-slate text-[20px] font-bold shrink-0">›</span>
+          </button>
+
+          {/* Recent Recipients */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[11px] font-bold text-slate uppercase tracking-[0.06em]">Recent recipients</div>
+              <Link to="/history" className="text-[12px] font-bold text-trust-high hover:underline">See all</Link>
+            </div>
+
+            <div className="flex gap-[11px]">
+              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(banks.find(b => b.code === "032") || selectedBank); setShowLookup(true); }}>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-trust-high text-[17px] border-[2.5px] border-trust-high">A</div>
+                <div className="text-[12px] font-bold text-ink">Adaeze</div>
+                <div className="text-[11px] font-extrabold text-trust-high">92</div>
+              </div>
+
+              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(banks.find(b => b.code === "058") || selectedBank); setShowLookup(true); }}>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-neutral text-[17px] border-[2.5px] border-risk-neutral">B</div>
+                <div className="text-[12px] font-bold text-ink">Blessing</div>
+                <div className="text-[11px] font-extrabold text-risk-neutral">54</div>
+              </div>
+
+              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("0987654321"); setShowLookup(true); }}>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-critical text-[17px] border-[2.5px] border-risk-critical">C</div>
+                <div className="text-[12px] font-bold text-ink">Chidi</div>
+                <div className="text-[11px] font-extrabold text-risk-critical">12</div>
+              </div>
+            </div>
+
+            {/* Pro Banner */}
+            {!user?.isPremium && (
+              <Link to="/upgrade" className="flex items-center gap-[12px] bg-[linear-gradient(120deg,rgba(255,195,0,0.1),rgba(255,138,0,0.06))] border border-[rgba(255,195,0,0.25)] rounded-[18px] p-[14px_16px] mt-[14px]">
+                <div className="w-[38px] h-[38px] rounded-[12px] bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(255,195,0,0.2)]">
+                  <Zap size={19} className="text-risk-high fill-risk-high" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[13.5px] font-bold text-ink">Unlock Vero Pro</div>
+                  <div className="text-[11.5px] text-[#8A6D00] font-semibold">Unlimited checks · priority alerts</div>
+                </div>
+                <span className="text-risk-high text-[16px] font-extrabold">›</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Lookup sheet — slides up over Home (design 7b) */}
+        <AnimatePresence>
+          {showLookup && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeLookup}
+                className="absolute inset-0 bg-ink/40 backdrop-blur-sm z-40"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 34, stiffness: 340 }}
+                className="absolute inset-0 z-50 bg-canvas rounded-t-[32px] flex flex-col overflow-y-auto no-scrollbar"
+              >
+                <div className="flex items-center justify-between px-6 pt-4 pb-1 shrink-0">
+                  <div className="w-9" />
+                  <div className="w-10 h-1 rounded-full bg-slate/25" />
+                  <button
+                    type="button"
+                    onClick={closeLookup}
+                    className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate shadow-card-xs"
+                    aria-label="Close"
+                  >
+                    <X size={17} />
+                  </button>
+                </div>
+
+                <div className="px-6 pb-10">
+                  <div className="mt-3 mb-5">
+                    <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-trust-high">Verify before you send</div>
+                    <div className="text-[23px] font-bold text-ink leading-[1.25] mt-2">Who are you paying?</div>
+                  </div>
+
+          <form
+            onSubmit={handleVerify}
+            className="flex flex-col gap-3 relative z-0"
+          >
+            <div className="flex flex-col gap-3 bg-white rounded-[26px] p-[22px] shadow-[0_20px_50px_rgba(43,52,69,0.06),0_4px_12px_rgba(43,52,69,0.04)]">
+
               <div className="flex flex-col gap-3">
                   
                   {/* Bank Selector Button */}
@@ -217,7 +379,7 @@ export default function Home() {
                     className="flex items-center justify-between bg-canvas rounded-2xl p-3 cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${selectedBank.bg} ${selectedBank.color}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${bankStyle(selectedBank.code).bg} ${bankStyle(selectedBank.code).color}`}>
                         <Building2 size={16} />
                       </div>
                       <div className="flex flex-col">
@@ -293,71 +455,80 @@ export default function Home() {
             </div>
           </form>
 
-          {/* Recent Recipients */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[11px] font-bold text-slate uppercase tracking-[0.06em]">Recent recipients</div>
-              <Link to="/history" className="text-[12px] font-bold text-trust-high hover:underline">See all</Link>
-            </div>
-            
-            <div className="flex gap-[11px]">
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(BANKS.find(b => b.code === "032") || BANKS[0]); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-trust-high text-[17px] border-[2.5px] border-trust-high">A</div>
-                <div className="text-[12px] font-bold text-ink">Adaeze</div>
-                <div className="text-[11px] font-extrabold text-trust-high">92</div>
-              </div>
-              
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(BANKS.find(b => b.code === "058") || BANKS[0]); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-neutral text-[17px] border-[2.5px] border-risk-neutral">B</div>
-                <div className="text-[12px] font-bold text-ink">Blessing</div>
-                <div className="text-[11px] font-extrabold text-risk-neutral">54</div>
-              </div>
-              
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("0987654321"); setSelectedBank(BANKS[0]); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-critical text-[17px] border-[2.5px] border-risk-critical">C</div>
-                <div className="text-[12px] font-bold text-ink">Chidi</div>
-                <div className="text-[11px] font-extrabold text-risk-critical">12</div>
-              </div>
-            </div>
-            
-            {/* Pro Banner */}
-            {!user?.isPremium && (
-              <Link to="/upgrade" className="flex items-center gap-[12px] bg-[linear-gradient(120deg,rgba(255,195,0,0.1),rgba(255,138,0,0.06))] border border-[rgba(255,195,0,0.25)] rounded-[18px] p-[14px_16px] mt-[14px]">
-                <div className="w-[38px] h-[38px] rounded-[12px] bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(255,195,0,0.2)]">
-                  <Zap size={19} className="text-risk-high fill-risk-high" />
+                  {/* Faster ways (design 7b) */}
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-hairline" />
+                    <span className="text-[11px] font-bold tracking-[0.04em] text-slate">FASTER WAYS</span>
+                    <div className="flex-1 h-px bg-hairline" />
+                  </div>
+
+                  <div className="flex gap-3">
+                    {/* No scanner implemented yet — labelled rather than dead */}
+                    <div className="flex-1 flex flex-col gap-2 bg-white rounded-[18px] p-4 shadow-card-xs opacity-55">
+                      <QrCode size={22} className="text-ink" strokeWidth={2.1} />
+                      <div className="text-[13.5px] font-bold text-ink">Scan QR</div>
+                      <div className="text-[11.5px] text-slate font-semibold leading-snug">Coming soon</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handlePasteDetails}
+                      className="flex-1 flex flex-col gap-2 bg-white rounded-[18px] p-4 shadow-card-xs text-left active:scale-[0.99] transition-transform"
+                    >
+                      <ClipboardCheck size={22} className="text-ink" strokeWidth={2.1} />
+                      <div className="text-[13.5px] font-bold text-ink">Paste details</div>
+                      <div className="text-[11.5px] text-slate font-semibold leading-snug">From your clipboard</div>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-[13.5px] font-bold text-ink">Unlock Vero Pro</div>
-                  <div className="text-[11.5px] text-[#8A6D00] font-semibold">Unlimited checks · priority alerts</div>
-                </div>
-                <span className="text-risk-high text-[16px] font-extrabold">›</span>
-              </Link>
-            )}
-          </div>
-        </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Bank Selector Bottom Sheet */}
         {showBankSelector && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setShowBankSelector(false)} />
             <div className="bg-surface w-full max-w-md h-[70vh] sm:h-auto sm:max-h-[70vh] sm:rounded-[24px] rounded-t-[32px] flex flex-col p-0 shadow-app relative animate-fade-in z-10 overflow-hidden">
-              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100">
                 <div className="font-bold text-[16px] text-ink">Select Bank</div>
-                <button onClick={() => setShowBankSelector(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate hover:bg-gray-200">
+                <button onClick={() => { setShowBankSelector(false); setBankQuery(""); }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate hover:bg-gray-200">
                   <X size={18} />
                 </button>
               </div>
+
+              {/* 250+ institutions come back from /api/banks — searching is not optional */}
+              <div className="px-4 pt-3">
+                <div className="flex items-center gap-2.5 bg-canvas rounded-2xl px-3.5 py-3">
+                  <Search size={17} className="text-slate shrink-0" />
+                  <input
+                    type="text"
+                    value={bankQuery}
+                    onChange={(e) => setBankQuery(e.target.value)}
+                    placeholder="Search banks"
+                    autoFocus
+                    className="w-full bg-transparent outline-none text-ink font-semibold text-[14.5px] placeholder-slate/70"
+                  />
+                </div>
+              </div>
+
               <div className="overflow-y-auto p-4 flex flex-col gap-2 no-scrollbar">
-                {BANKS.map(bank => (
+                {filteredBanks.length === 0 && (
+                  <div className="text-center text-slate font-semibold text-[13.5px] py-8">
+                    No bank matches “{bankQuery}”.
+                  </div>
+                )}
+                {filteredBanks.map(bank => (
                   <div 
                     key={bank.code}
                     onClick={() => {
                       setSelectedBank(bank);
                       setShowBankSelector(false);
+                      setBankQuery("");
                     }}
                     className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-colors ${selectedBank.code === bank.code ? 'bg-white shadow-card-xs border border-gray-100' : 'hover:bg-white/50 border border-transparent'}`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${bank.bg} ${bank.color}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${bankStyle(bank.code).bg} ${bankStyle(bank.code).color}`}>
                       <Building2 size={18} />
                     </div>
                     <span className={`font-bold text-[15px] ${selectedBank.code === bank.code ? 'text-ink' : 'text-slate'}`}>

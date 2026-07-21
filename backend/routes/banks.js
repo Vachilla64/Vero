@@ -44,10 +44,21 @@ async function fetchBanksFromPaystack() {
       throw new Error('Unexpected Paystack payload');
     }
 
-    return body.data
-      .filter((bank) => bank.active && bank.code)
-      .map((bank) => ({ code: bank.code, name: bank.name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Paystack ships a handful of duplicate codes (e.g. two "Zenith Bank"
+    // rows on 057, "BANKIT MFB" vs "BANKIT MICROFINANCE BANK LTD" on 50572).
+    // The code is the identifier we send to /api/verify, so duplicates are
+    // functionally identical — and they collide as React keys downstream.
+    // Keep the shortest name, which is consistently the human-readable one.
+    const byCode = new Map();
+    for (const bank of body.data) {
+      if (!bank.active || !bank.code) continue;
+      const existing = byCode.get(bank.code);
+      if (!existing || bank.name.length < existing.name.length) {
+        byCode.set(bank.code, { code: bank.code, name: bank.name });
+      }
+    }
+
+    return [...byCode.values()].sort((a, b) => a.name.localeCompare(b.name));
   } finally {
     clearTimeout(timeoutId);
   }
