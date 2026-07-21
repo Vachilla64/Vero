@@ -5,7 +5,6 @@ import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
-import Verify from "./pages/Verify";
 import Tags from "./pages/Tags";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
@@ -82,13 +81,7 @@ function AppRoutes() {
         />
         <Route 
           path="/verify" 
-          element={
-            <ProtectedRoute>
-              <PageLayout>
-                <Verify />
-              </PageLayout>
-            </ProtectedRoute>
-          } 
+          element={<Navigate to="/" replace />} 
         />
         <Route 
           path="/tags" 
