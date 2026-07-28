@@ -51,6 +51,19 @@ const BANK_ALIASES = {
   "moniepont": "moniepoint",
 };
 
+const BANK_LOGOS = {
+  "044": "/banks/accessbankplc.png",
+  "058": "/banks/gtbank.png",
+  "057": "/banks/zenithbank.png",
+  "033": "/banks/ubagroup.png",
+  "011": "/banks/firstbanknigeria.png",
+  "032": "/banks/unionbankng.png",
+  "50211": "/banks/kuda.png",
+  "100004": "/banks/opayweb.png",
+  "50515": "/banks/moniepoint.png",
+  "100033": "/banks/palmpay.png",
+};
+
 // Shown until /api/banks responds, and if it never does.
 const FALLBACK_BANKS = [
   { code: "044", name: "Access Bank" },
@@ -413,8 +426,12 @@ export default function Home() {
                     className="flex items-center justify-between bg-canvas rounded-2xl p-3 cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${bankStyle(selectedBank.code).bg} ${bankStyle(selectedBank.code).color}`}>
-                        <Building2 size={16} />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm overflow-hidden ${bankStyle(selectedBank.code).bg} ${bankStyle(selectedBank.code).color}`}>
+                        {BANK_LOGOS[selectedBank.code] ? (
+                          <img src={BANK_LOGOS[selectedBank.code]} alt={selectedBank.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Building2 size={16} />
+                        )}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-[11px] font-bold text-slate uppercase tracking-wider mb-[2px]">Bank</span>
@@ -562,8 +579,12 @@ export default function Home() {
                     }}
                     className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-colors ${selectedBank.code === bank.code ? 'bg-white shadow-card-xs border border-gray-100' : 'hover:bg-white/50 border border-transparent'}`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${bankStyle(bank.code).bg} ${bankStyle(bank.code).color}`}>
-                      <Building2 size={18} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg overflow-hidden ${bankStyle(bank.code).bg} ${bankStyle(bank.code).color}`}>
+                      {BANK_LOGOS[bank.code] ? (
+                        <img src={BANK_LOGOS[bank.code]} alt={bank.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Building2 size={18} />
+                      )}
                     </div>
                     <span className={`font-bold text-[15px] ${selectedBank.code === bank.code ? 'text-ink' : 'text-slate'}`}>
                       {bank.name}
