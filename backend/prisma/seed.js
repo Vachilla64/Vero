@@ -25,6 +25,8 @@ async function main() {
   // Clear existing data in correct dependency order
   await prisma.report.deleteMany({});
   await prisma.transaction.deleteMany({});
+  await prisma.verification.deleteMany({});
+  await prisma.apiKey.deleteMany({});
   await prisma.account.deleteMany({});
   await prisma.user.deleteMany({});
 

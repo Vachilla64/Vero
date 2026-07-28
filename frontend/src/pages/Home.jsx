@@ -24,6 +24,33 @@ const BANK_STYLES = {
 const DEFAULT_BANK_STYLE = { color: "text-slate", bg: "bg-canvas" };
 const bankStyle = (code) => BANK_STYLES[code] || DEFAULT_BANK_STYLE;
 
+// Common nicknames people actually type, which don't appear as substrings of
+// the official Paystack/NIBSS bank names (e.g. "GTBank" vs "Guaranty Trust
+// Bank"). Search checks these in addition to the raw name.
+const BANK_ALIASES = {
+  "gtbank": "guaranty trust",
+  "gtb": "guaranty trust",
+  "uba": "united bank for africa",
+  "firstbank": "first bank",
+  "fbn": "first bank",
+  "ubn": "union bank",
+  "fcmb": "first city monument",
+  "stanbic": "stanbic",
+  "sterling": "sterling",
+  "wema": "wema",
+  "alat": "wema",
+  "fidelity": "fidelity",
+  "polaris": "polaris",
+  "unity": "unity",
+  "keystone": "keystone",
+  "heritage": "heritage",
+  "providus": "providus",
+  "suntrust": "suntrust",
+  "jaiz": "jaiz",
+  "moniepoint": "moniepoint",
+  "moniepont": "moniepoint",
+};
+
 // Shown until /api/banks responds, and if it never does.
 const FALLBACK_BANKS = [
   { code: "044", name: "Access Bank" },
@@ -92,7 +119,14 @@ export default function Home() {
   }, []);
 
   const filteredBanks = bankQuery.trim()
-    ? banks.filter((b) => b.name.toLowerCase().includes(bankQuery.trim().toLowerCase()))
+    ? banks.filter((b) => {
+        const name = b.name.toLowerCase();
+        const q = bankQuery.trim().toLowerCase();
+        if (name.includes(q)) return true;
+        return Object.entries(BANK_ALIASES).some(
+          ([alias, target]) => alias.includes(q) && name.includes(target)
+        );
+      })
     : banks;
 
   const closeLookup = () => {
