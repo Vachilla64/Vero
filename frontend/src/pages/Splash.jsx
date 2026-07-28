@@ -23,7 +23,7 @@ export default function Splash({ onFinish }) {
       {/* Logo Container */}
       <div className="z-10 flex flex-col items-center animate-[bounce-soft_2s_infinite]">
         <div className="w-24 h-24 bg-white p-4 rounded-3xl shadow-app mb-6">
-          <img src="/vero-logo.png" alt="Vero Logo" className="w-full h-full object-contain" />
+          <img src="/vero-icon.svg" alt="Vero Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-white font-black text-4xl tracking-widest">VERO</h1>
         <p className="text-trust-greenLight font-bold text-sm tracking-widest uppercase mt-3 opacity-80">

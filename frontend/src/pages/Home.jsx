@@ -7,76 +7,7 @@ import FeedbackModal from "../components/FeedbackModal";
 import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check, QrCode, ClipboardCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Brand accents for the banks people actually pick most. /api/banks returns
-// 250+ institutions, so anything unmapped falls back to a neutral chip.
-const BANK_STYLES = {
-  "044": { color: "text-orange-500", bg: "bg-orange-500/10" },
-  "058": { color: "text-orange-600", bg: "bg-orange-600/10" },
-  "057": { color: "text-red-500", bg: "bg-red-500/10" },
-  "033": { color: "text-red-600", bg: "bg-red-600/10" },
-  "011": { color: "text-blue-800", bg: "bg-blue-800/10" },
-  "032": { color: "text-blue-400", bg: "bg-blue-400/10" },
-  "50211": { color: "text-purple-600", bg: "bg-purple-600/10" },
-  "100004": { color: "text-green-500", bg: "bg-green-500/10" },
-  "50515": { color: "text-blue-600", bg: "bg-blue-600/10" },
-  "100033": { color: "text-purple-500", bg: "bg-purple-500/10" },
-};
-const DEFAULT_BANK_STYLE = { color: "text-slate", bg: "bg-canvas" };
-const bankStyle = (code) => BANK_STYLES[code] || DEFAULT_BANK_STYLE;
-
-// Common nicknames people actually type, which don't appear as substrings of
-// the official Paystack/NIBSS bank names (e.g. "GTBank" vs "Guaranty Trust
-// Bank"). Search checks these in addition to the raw name.
-const BANK_ALIASES = {
-  "gtbank": "guaranty trust",
-  "gtb": "guaranty trust",
-  "uba": "united bank for africa",
-  "firstbank": "first bank",
-  "fbn": "first bank",
-  "ubn": "union bank",
-  "fcmb": "first city monument",
-  "stanbic": "stanbic",
-  "sterling": "sterling",
-  "wema": "wema",
-  "alat": "wema",
-  "fidelity": "fidelity",
-  "polaris": "polaris",
-  "unity": "unity",
-  "keystone": "keystone",
-  "heritage": "heritage",
-  "providus": "providus",
-  "suntrust": "suntrust",
-  "jaiz": "jaiz",
-  "moniepoint": "moniepoint",
-  "moniepont": "moniepoint",
-};
-
-const BANK_LOGOS = {
-  "044": "/banks/accessbankplc.png",
-  "058": "/banks/gtbank.png",
-  "057": "/banks/zenithbank.png",
-  "033": "/banks/ubagroup.png",
-  "011": "/banks/firstbanknigeria.png",
-  "032": "/banks/unionbankng.png",
-  "50211": "/banks/kuda.png",
-  "100004": "/banks/opayweb.png",
-  "50515": "/banks/moniepoint.png",
-  "100033": "/banks/palmpay.png",
-};
-
-// Shown until /api/banks responds, and if it never does.
-const FALLBACK_BANKS = [
-  { code: "044", name: "Access Bank" },
-  { code: "058", name: "Guaranty Trust Bank" },
-  { code: "057", name: "Zenith Bank" },
-  { code: "033", name: "United Bank For Africa" },
-  { code: "011", name: "First Bank of Nigeria" },
-  { code: "032", name: "Union Bank of Nigeria" },
-  { code: "50211", name: "Kuda Bank" },
-  { code: "100004", name: "OPay" },
-  { code: "50515", name: "Moniepoint MFB" },
-  { code: "100033", name: "PalmPay" },
-];
+import { BANK_STYLES, DEFAULT_BANK_STYLE, bankStyle, BANK_ALIASES, BANK_LOGOS, FALLBACK_BANKS } from "../utils/banks";
 
 export default function Home() {
   const { user, refreshProfile } = useAuth();
@@ -296,7 +227,7 @@ export default function Home() {
                 <span className="font-bold text-[11px] tracking-[0.1em] uppercase text-white/85">Vero shield · active</span>
               </div>
               <div className="w-[38px] h-[38px] rounded-[12px] bg-white flex items-center justify-center shadow-[0_6px_16px_rgba(0,80,30,0.18)]">
-                <img src="/vero-logo.png" alt="Vero" className="w-[26px] h-[26px] object-contain" />
+                <img src="/vero-icon.svg" alt="Vero" className="w-[26px] h-[26px] object-contain" />
               </div>
             </div>
             
@@ -341,19 +272,25 @@ export default function Home() {
 
             <div className="flex gap-[11px]">
               <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(banks.find(b => b.code === "032") || selectedBank); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-trust-high text-[17px] border-[2.5px] border-trust-high">A</div>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-trust-high text-[17px] border-[2.5px] border-trust-high overflow-hidden">
+                  {BANK_LOGOS["032"] ? <img src={BANK_LOGOS["032"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "A"}
+                </div>
                 <div className="text-[12px] font-bold text-ink">Adaeze</div>
                 <div className="text-[11px] font-extrabold text-trust-high">92</div>
               </div>
 
               <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(banks.find(b => b.code === "058") || selectedBank); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-neutral text-[17px] border-[2.5px] border-risk-neutral">B</div>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-neutral text-[17px] border-[2.5px] border-risk-neutral overflow-hidden">
+                  {BANK_LOGOS["058"] ? <img src={BANK_LOGOS["058"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "B"}
+                </div>
                 <div className="text-[12px] font-bold text-ink">Blessing</div>
                 <div className="text-[11px] font-extrabold text-risk-neutral">54</div>
               </div>
 
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("0987654321"); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-critical text-[17px] border-[2.5px] border-risk-critical">C</div>
+              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("0987654321"); setSelectedBank(banks.find(b => b.code === "044") || selectedBank); setShowLookup(true); }}>
+                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-critical text-[17px] border-[2.5px] border-risk-critical overflow-hidden">
+                  {BANK_LOGOS["044"] ? <img src={BANK_LOGOS["044"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "C"}
+                </div>
                 <div className="text-[12px] font-bold text-ink">Chidi</div>
                 <div className="text-[11px] font-extrabold text-risk-critical">12</div>
               </div>
@@ -715,8 +652,12 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col p-[28px_30px_30px]">
         <div className="flex items-center gap-[12px] mb-[22px]">
-          <div className={`w-[52px] h-[52px] rounded-[16px] ${avatarBg} border-[2.5px] border-current flex items-center justify-center font-bold text-[20px] ${avatarColor}`}>
-            {trustData.accountName ? trustData.accountName.charAt(0) : "?"}
+          <div className={`w-[52px] h-[52px] rounded-[16px] ${avatarBg} border-[2.5px] border-current flex items-center justify-center font-bold text-[20px] ${avatarColor} overflow-hidden`}>
+            {BANK_LOGOS[selectedBank.code] ? (
+              <img src={BANK_LOGOS[selectedBank.code]} alt={selectedBank.name} className="w-full h-full object-cover" />
+            ) : (
+              trustData.accountName ? trustData.accountName.charAt(0) : "?"
+            )}
           </div>
           <div>
             <div className="font-bold text-[19px] text-ink">{trustData.accountName || "Name not on file"}</div>
@@ -777,7 +718,13 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 mb-5 shadow-card-xs">
-              <div className={`w-[42px] h-[42px] rounded-[16px] ${avatarBg} border-[2.5px] border-current flex items-center justify-center font-bold text-[20px] ${avatarColor}`}>{trustData.accountName ? trustData.accountName.charAt(0) : "?"}</div>
+              <div className={`w-[42px] h-[42px] rounded-[16px] ${avatarBg} border-[2.5px] border-current flex items-center justify-center font-bold text-[20px] ${avatarColor} overflow-hidden`}>
+                {BANK_LOGOS[selectedBank.code] ? (
+                  <img src={BANK_LOGOS[selectedBank.code]} alt={selectedBank.name} className="w-full h-full object-cover" />
+                ) : (
+                  trustData.accountName ? trustData.accountName.charAt(0) : "?"
+                )}
+              </div>
               <div>
                 <div className="font-bold text-[15px] text-ink">{trustData.accountName || "Name not on file"}</div>
                 <div className="text-[12.5px] text-slate font-medium">{selectedBank.name} · ••••{nuban.slice(-4)}</div>
