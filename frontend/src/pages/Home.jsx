@@ -289,7 +289,7 @@ export default function Home() {
           </div>
 
           {/* Vero Shield Card */}
-          <div className="bg-gradient-to-br from-trust-high to-trust-good rounded-[28px] p-6 relative overflow-hidden shadow-[0_22px_44px_rgba(0,200,83,0.32)]">
+          <div className="bg-gradient-to-br from-trust-high to-trust-good rounded-[28px] p-6 relative overflow-hidden shadow-[0_22px_44px_rgba(0,200,83,0.32)] shrink-0">
             <div className="absolute -top-[50px] -right-[40px] w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.28),transparent_70%)]"></div>
             
             <div className="flex items-center justify-between relative">
