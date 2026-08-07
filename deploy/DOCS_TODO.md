@@ -16,3 +16,9 @@ doesn't reflect yet. Clear each line out once it's written up there.
   Railway instructions were.
 - LLM/AI service (self-hosted Ollama on a separate GPU EC2 instance) — planned, not
   yet built. Add once it exists.
+- Backend now has a real HTTPS domain: `https://verolive.duckdns.org` (free DuckDNS
+  subdomain + Caddy auto-TLS via Let's Encrypt on the EC2 box). Frontend
+  `VITE_API_URL` updated to match. Raw IP:port (`50.19.248.193:3712`) still works as
+  a fallback but shouldn't be the documented address anymore.
+- Caddy config lives at `/etc/caddy/Caddyfile` on the server (not in this repo) —
+  reverse-proxies 443 -> localhost:3712. Worth committing a copy to `deploy/` too.

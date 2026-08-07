@@ -1,0 +1,3 @@
+verolive.duckdns.org {
+    reverse_proxy localhost:3712
+}
