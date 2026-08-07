@@ -6,10 +6,17 @@ import PageWrapper from "../components/PageWrapper";
 import FeedbackModal from "../components/FeedbackModal";
 import SlideButton from "../components/SlideButton";
 import BankDemoGate from "../components/BankDemoGate";
-import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check, QrCode, ClipboardCheck } from "lucide-react";
+import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check, QrCode, ClipboardCheck, Flag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { BANK_STYLES, DEFAULT_BANK_STYLE, bankStyle, BANK_ALIASES, BANK_LOGOS, FALLBACK_BANKS, getBankLogoByName } from "../utils/banks";
+
+const REPORT_REASONS = [
+  { id: "scam", label: "Fake vendor / paid, never delivered" },
+  { id: "impersonation", label: "Impersonating a business" },
+  { id: "phishing", label: "Phishing / fake payment link" },
+  { id: "other", label: "Something else" },
+];
 
 export default function Home() {
   const { user, refreshProfile } = useAuth();
@@ -36,6 +43,14 @@ export default function Home() {
   const [reportSuccess, setReportSuccess] = useState(false);
   const [sent, setSent] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  // Quick report — flag a number directly from Home, no trust check needed first
+  const [showQuickReport, setShowQuickReport] = useState(false);
+  const [quickReportNuban, setQuickReportNuban] = useState("");
+  const [quickReportReason, setQuickReportReason] = useState("");
+  const [quickReportSubmitting, setQuickReportSubmitting] = useState(false);
+  const [quickReportSuccess, setQuickReportSuccess] = useState(false);
+  const [quickReportError, setQuickReportError] = useState("");
 
   // Real lookup history — backs the "Recent recipients" cards and the
   // accounts-checked / scams-flagged stats, instead of hardcoded demo values.
@@ -195,6 +210,37 @@ export default function Home() {
     }
   };
 
+  const closeQuickReport = () => {
+    setShowQuickReport(false);
+    setQuickReportNuban("");
+    setQuickReportReason("");
+    setQuickReportError("");
+    setQuickReportSuccess(false);
+  };
+
+  const handleQuickReport = async () => {
+    if (!quickReportReason || quickReportNuban.length !== 10) return;
+    setQuickReportSubmitting(true);
+    setQuickReportError("");
+
+    try {
+      await api.post("/api/report", {
+        nuban: quickReportNuban,
+        reason: quickReportReason
+      });
+      setQuickReportSuccess(true);
+      setTimeout(closeQuickReport, 2000);
+    } catch (err) {
+      if (err.response?.status === 429) {
+        setQuickReportError("You have already reported this account.");
+      } else {
+        setQuickReportError("Failed to submit report.");
+      }
+    } finally {
+      setQuickReportSubmitting(false);
+    }
+  };
+
   const clearVerdict = () => {
     setTrustData(null);
     setNuban("");
@@ -286,6 +332,22 @@ export default function Home() {
               <div className="text-[12.5px] text-slate font-semibold mt-[3px]">Enter a NUBAN before you send</div>
             </div>
             <span className="text-slate text-[20px] font-bold shrink-0">›</span>
+          </button>
+
+          {/* Quick report — flag a scam number without running a check first */}
+          <button
+            type="button"
+            onClick={() => setShowQuickReport(true)}
+            className="mt-3 w-full flex items-center gap-4 bg-white rounded-[24px] p-4 text-left shadow-card-xs active:scale-[0.99] transition-transform"
+          >
+            <div className="w-10 h-10 rounded-[14px] bg-risk-critical/10 flex items-center justify-center shrink-0">
+              <Flag size={18} className="text-risk-critical" strokeWidth={2.2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-bold text-ink leading-tight">Report a number</div>
+              <div className="text-[11.5px] text-slate font-semibold mt-[2px]">Flag a scam account, no check needed</div>
+            </div>
+            <span className="text-slate text-[18px] font-bold shrink-0">›</span>
           </button>
 
           {/* ECX HackX in-app demo — banner + one-time first-open prompt */}
@@ -509,7 +571,7 @@ export default function Home() {
 
         {/* Bank Selector Bottom Sheet */}
         {showBankSelector && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setShowBankSelector(false)} />
             <div className="bg-surface w-full max-w-md h-[70vh] sm:h-auto sm:max-h-[70vh] sm:rounded-[24px] rounded-t-[32px] flex flex-col p-0 shadow-app relative animate-fade-in z-10 overflow-hidden">
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100">
@@ -574,7 +636,7 @@ export default function Home() {
 
         {/* Limit Reached Modal */}
         {isLimitReached && (
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-fade-in">
             <div className="bg-surface max-w-sm w-full rounded-[24px] shadow-app p-6 text-center">
               <div className="w-12 h-12 bg-risk-neutral/10 text-risk-neutral rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap size={24} className="fill-risk-neutral" />
@@ -590,6 +652,71 @@ export default function Home() {
                 <button onClick={() => setIsLimitReached(false)} className="w-full text-slate font-semibold py-3 mt-1">
                   Dismiss
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Report Modal */}
+        {showQuickReport && (
+          <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
+            <div className="bg-surface w-full max-w-md h-[85vh] sm:h-auto sm:rounded-[24px] rounded-t-[32px] flex flex-col p-6 shadow-app">
+              <div className="flex items-center justify-between mb-5">
+                <button onClick={closeQuickReport} className="text-slate font-semibold text-[15px]">‹ Back</button>
+                <div className="font-bold text-[15px] text-ink">Report account</div>
+                <div className="w-8"></div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 mb-5 shadow-card-xs">
+                <Search size={18} className="text-slate shrink-0" />
+                <div className="flex flex-col flex-1">
+                  <span className="text-[11px] font-bold text-slate uppercase tracking-wider mb-[2px]">NUBAN</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength="10"
+                    value={quickReportNuban}
+                    onChange={(e) => setQuickReportNuban(e.target.value.replace(/\D/g, ''))}
+                    placeholder="0123456789"
+                    autoFocus
+                    className="w-full bg-transparent outline-none text-ink font-bold text-[15px] placeholder-slate/60"
+                  />
+                </div>
+              </div>
+
+              <div className="text-[11px] font-bold text-slate uppercase tracking-widest mb-3">What happened?</div>
+              <div className="flex flex-col gap-2 mb-5">
+                {REPORT_REASONS.map((opt) => (
+                  <div
+                    key={opt.id}
+                    onClick={() => setQuickReportReason(opt.id)}
+                    className={`flex items-center justify-between rounded-xl p-3.5 cursor-pointer border-[1.5px] bg-white ${
+                      quickReportReason === opt.id ? 'border-risk-critical' : 'border-gray-200'
+                    }`}
+                  >
+                    <span className="font-semibold text-[14.5px] text-ink">{opt.label}</span>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                      quickReportReason === opt.id ? 'bg-risk-critical text-white' : 'border-[1.5px] border-gray-200'
+                    }`}>
+                      {quickReportReason === opt.id && <span className="text-xs">✓</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {quickReportError && <div className="text-risk-critical text-sm text-center font-medium mb-2">{quickReportError}</div>}
+
+              <div className="mt-auto">
+                <button
+                  onClick={handleQuickReport}
+                  disabled={quickReportNuban.length !== 10 || !quickReportReason || quickReportSubmitting}
+                  className="w-full bg-ink text-white font-semibold py-4 rounded-full text-[16px] disabled:opacity-50"
+                >
+                  {quickReportSubmitting ? "Submitting..." : quickReportSuccess ? "Submitted!" : "Submit report"}
+                </button>
+                <div className="text-center mt-3 text-slate text-[12px] font-medium leading-relaxed px-4">
+                  Reports are reviewed and shared across the network to protect others.
+                </div>
               </div>
             </div>
           </div>
@@ -743,7 +870,7 @@ export default function Home() {
 
       {/* Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
+        <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
           <div className="bg-surface w-full max-w-md h-[85vh] sm:h-auto sm:rounded-[24px] rounded-t-[32px] flex flex-col p-6 shadow-app">
             <div className="flex items-center justify-between mb-5">
               <button onClick={() => setShowReportModal(false)} className="text-slate font-semibold text-[15px]">‹ Back</button>
@@ -767,12 +894,7 @@ export default function Home() {
 
             <div className="text-[11px] font-bold text-slate uppercase tracking-widest mb-3 mt-2">What happened?</div>
             <div className="flex flex-col gap-2 mb-5">
-              {[
-                { id: "scam", label: "Fake vendor / paid, never delivered" },
-                { id: "impersonation", label: "Impersonating a business" },
-                { id: "phishing", label: "Phishing / fake payment link" },
-                { id: "other", label: "Something else" }
-              ].map((opt) => (
+              {REPORT_REASONS.map((opt) => (
                 <div 
                   key={opt.id}
                   onClick={() => setReportReason(opt.id)}

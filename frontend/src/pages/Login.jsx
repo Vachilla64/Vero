@@ -25,6 +25,18 @@ export default function Login() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    try {
+      setError("");
+      setIsSubmitting(true);
+      await login("demo@vero.net", "password123");
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.error || "Demo login failed");
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-surface font-sans overflow-y-auto no-scrollbar relative">
       {/* Brand glow */}
@@ -53,6 +65,21 @@ export default function Login() {
             {error}
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={handleDemoLogin}
+          disabled={isSubmitting}
+          className="w-full bg-ink text-white font-bold text-[15px] p-[15px] rounded-full shadow-card border-none cursor-pointer hover:bg-opacity-90 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait mb-4"
+        >
+          {isSubmitting ? "Logging in…" : "Try the demo →"}
+        </button>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-hairline" />
+          <div className="text-[11px] font-bold text-slate uppercase tracking-[.06em]">or log in</div>
+          <div className="flex-1 h-px bg-hairline" />
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1">
           <div className="flex flex-col gap-3">
