@@ -29,9 +29,9 @@ services:
       DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/vero"
       JWT_SECRET: "local-dev-only-not-a-real-secret"
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
-      PORT: 8080
+      PORT: 3712
     ports:
-      - "8080:8080"
+      - "3712:3712"
     depends_on:
       postgres:
         condition: service_healthy
