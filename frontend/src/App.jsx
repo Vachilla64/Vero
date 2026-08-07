@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children }) => {
 // Mobile App Frame Constraint — single source of truth for the phone chrome
 const PhoneFrame = ({ children }) => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-canvas p-0 sm:p-4 md:p-8">
+    <div className="flex items-center justify-center h-[100dvh] sm:h-screen overflow-hidden bg-canvas p-0 sm:p-4 md:p-8">
       <div className="w-full h-[100dvh] sm:h-[850px] max-w-md bg-surface relative overflow-hidden sm:rounded-[3rem] sm:shadow-app">
         {children}
       </div>
