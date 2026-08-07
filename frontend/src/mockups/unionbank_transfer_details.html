@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Union Bank Transfer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+  body { background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; min-height: 100vh; align-items: center; }
+  .app-container { width: 375px; height: 812px; background-color: #f8fafc; position: relative; overflow: hidden; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); display: flex; flex-direction: column; border: 8px solid #ffffff; }
+  .header { background: linear-gradient(135deg, #00A2E8 0%, #006b99 100%); color: white; padding: 20px; display: flex; align-items: center; justify-content: space-between; padding-top: 50px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 10px 20px rgba(0, 162, 232, 0.2); z-index: 10; position: relative; }
+  .header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+  .header .back-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
+  .header .back-btn:hover { transform: translateX(-4px); }
+  
+  .account-cards { display: flex; margin: 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,0.4); padding: 20px; position: relative; z-index: 5; }
+  .card-half { flex: 1; display: flex; flex-direction: column; }
+  .card-half:first-child { border-right: 1px solid rgba(0,0,0,0.05); padding-right: 15px; }
+  .card-half:last-child { padding-left: 15px; }
+  .label-text { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
+  .value-text { font-size: 14px; font-weight: 500; color: #1e293b; line-height: 1.5; }
+  .value-text.highlight { color: #00A2E8; font-weight: 700; font-size: 15px; margin-top: 4px; display: inline-block; }
+  
+  .input-section { padding: 0 20px 20px; flex: 1; overflow-y: auto; }
+  .input-group { margin-bottom: 24px; position: relative; }
+  .input-label { font-size: 13px; color: #475569; margin-bottom: 8px; display: block; font-weight: 500; }
+  .input-field { width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px 16px 16px 20px; font-size: 16px; color: #0f172a; outline: none; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+  .input-field:focus { border-color: #00A2E8; box-shadow: 0 0 0 4px rgba(0, 162, 232, 0.1); }
+  .input-field::placeholder { color: #94a3b8; }
+  
+  /* Custom Dropdown Styling */
+  .custom-dropdown { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .dropdown-icon { border: solid #94a3b8; border-width: 0 2px 2px 0; display: inline-block; padding: 4px; transform: rotate(45deg); transition: transform 0.3s; }
+  
+  .currency { position: absolute; left: 20px; top: 40px; color: #0f172a; font-size: 18px; font-weight: 600; }
+  .amount-input { padding-left: 45px; font-weight: 700; font-size: 20px; letter-spacing: 0.5px; }
+  
+  .save-bene { display: flex; align-items: center; gap: 12px; margin-top: 16px; cursor: pointer; user-select: none; }
+  .checkbox { width: 24px; height: 24px; border-radius: 8px; border: 2px solid #F1C40F; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; background: #ffffff; }
+  .checkbox.checked { background-color: #F1C40F; border-color: #F1C40F; box-shadow: 0 4px 8px rgba(241, 196, 15, 0.25); }
+  .checkbox.checked::after { content: '✓'; color: white; font-size: 14px; font-weight: bold; }
+  .save-text { font-size: 14px; color: #475569; font-weight: 500; }
+  
+  .bottom-btn { position: absolute; bottom: 30px; left: 20px; right: 20px; background: linear-gradient(135deg, #00A2E8 0%, #007BB5 100%); color: white; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 162, 232, 0.3); transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.5px; }
+  .bottom-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0, 162, 232, 0.4); }
+  .bottom-btn:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="back-btn">←</div>
+    <h1>Transfer Details</h1>
+    <div style="width: 24px;"></div>
+  </div>
+  
+  <div class="account-cards">
+    <div class="card-half">
+      <div class="label-text">From</div>
+      <div class="value-text">UNION VIBE TIER 2<br><span style="color:#64748b; font-size:12px; font-weight:400;">0039****33</span><br><span class="highlight">₦ 1,000,000.00</span></div>
+    </div>
+    <div class="card-half">
+      <div class="label-text">To</div>
+      <div class="value-text">VALENTINE CHINEDU<br><span style="color:#64748b; font-size:12px; font-weight:400;">UBA • 2000000000</span></div>
+    </div>
+  </div>
+  
+  <div class="input-section">
+    <div class="input-group">
+      <label class="input-label">Destination Bank</label>
+      <div class="input-field custom-dropdown">
+        <span>United Bank for Africa (UBA)</span>
+        <i class="dropdown-icon"></i>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Amount</label>
+      <span class="currency">₦</span>
+      <input type="text" class="input-field amount-input" value="50,000" />
+    </div>
+    
+    <div class="input-group">
+      <label class="input-label">Payment Description</label>
+      <input type="text" class="input-field" value="Eye glasses" />
+    </div>
+    
+    <div class="save-bene">
+      <div class="checkbox checked"></div>
+      <div class="save-text">Save to beneficiaries</div>
+    </div>
+  </div>
+  
+  <button class="bottom-btn">Continue</button>
+</div>
+</body>
+</html>

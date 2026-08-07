@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Transfer - Step 2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #F0F4F8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #1E293B;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #FFFFFF;
+            min-height: 100vh;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background-color: #fff;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            color: #64748B;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            color: #D40000;
+        }
+
+        .header-title-container {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: -0.2px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .logo {
+            display: flex;
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .logo-part1 {
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            border-radius: 10px 0 10px 0;
+            position: absolute;
+            left: 0;
+            transform: skewX(-15deg);
+        }
+
+        .logo-part2 {
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            opacity: 0.8;
+            border-radius: 0 10px 0 10px;
+            position: absolute;
+            right: 0;
+            top: 4px;
+            transform: skewX(-15deg);
+            z-index: 1;
+        }
+
+        .progress-bar-container {
+            height: 3px;
+            background-color: #F1F5F9;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #D40000 0%, #FF3B30 100%);
+            width: 66.66%;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .content {
+            padding: 28px 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .beneficiary-info-block {
+            display: flex;
+            flex-direction: column;
+            background: #F8FAFC;
+            border-radius: 16px;
+            padding: 8px 16px;
+            border: 1px solid #F1F5F9;
+        }
+        
+        .beneficiary-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background-color: #E2E8F0;
+            color: #475569;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .avatar.dark {
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(71,85,105,0.2);
+        }
+
+        .avatar svg {
+            width: 20px;
+            height: 20px;
+            fill: #475569;
+        }
+
+        .beneficiary-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .beneficiary-label {
+            font-size: 13px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .beneficiary-name {
+            font-size: 15px;
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #E2E8F0;
+            margin: 4px 0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            letter-spacing: -0.1px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            background-color: #FFFFFF;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            transition: all 0.25s ease;
+        }
+
+        .input-wrapper.custom-select {
+            cursor: pointer;
+        }
+
+        .input-wrapper:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+        }
+
+        .input-wrapper:active {
+            border-color: #D40000;
+        }
+
+        .selected-value {
+            font-size: 16px;
+            color: #0F172A;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .input-wrapper input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #0F172A;
+            width: 100%;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chevron-down {
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid #64748B;
+            border-bottom: 2px solid #64748B;
+            transform: rotate(45deg);
+            margin-bottom: 4px;
+            pointer-events: none;
+            flex-shrink: 0;
+            margin-left: 12px;
+            transition: transform 0.2s ease;
+        }
+        
+        .input-wrapper:hover .chevron-down {
+            border-color: #334155;
+        }
+
+        .warning-text {
+            color: #475569;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            margin-top: -12px;
+            font-weight: 500;
+        }
+
+        .warning-icon {
+            background-color: #FEE2E2;
+            color: #D40000;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .modify-limit {
+            color: #D40000;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: -12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .accordion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #F8FAFC;
+            border-radius: 14px;
+            cursor: pointer;
+            border: 1px solid #F1F5F9;
+            transition: all 0.2s ease;
+        }
+        
+        .accordion:hover {
+            border-color: #E2E8F0;
+        }
+
+        .accordion-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0F172A;
+        }
+
+        .footer {
+            padding: 24px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F1F5F9;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 8px 24px rgba(211, 17, 24, 0.25);
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(211, 17, 24, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </div>
+            <div class="header-title-container">
+                <div class="header-title">New Local Transfer</div>
+                <div class="header-subtitle">Step 2 of 3</div>
+            </div>
+            <div class="logo">
+                <div class="logo-part1"></div>
+                <div class="logo-part2"></div>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <div class="content">
+            <div class="beneficiary-info-block">
+                <div class="beneficiary-info">
+                    <div class="avatar">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-8.5-9L2 6v2h19V6l-9.5-5z"/>
+                        </svg>
+                    </div>
+                    <div class="beneficiary-details">
+                        <div class="beneficiary-label">Beneficiary account number</div>
+                        <div class="beneficiary-name">8124759358</div>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="beneficiary-info">
+                    <div class="avatar dark">VC</div>
+                    <div class="beneficiary-details">
+                        <div class="beneficiary-label">Beneficiary name</div>
+                        <div class="beneficiary-name">VALENTINE CHINEDU ALFRED</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label">Currency</div>
+                <div class="input-wrapper custom-select">
+                    <div class="selected-value">Nigerian Naira NGN</div>
+                    <div class="chevron-down"></div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label">Amount *</div>
+                <div class="input-wrapper">
+                    <input type="text" value="NGN 50000">
+                </div>
+            </div>
+
+            <div class="warning-text">
+                <div class="warning-icon">!</div>
+                Your remaining daily transfer limit is ₦ 200,000.00
+            </div>
+            
+            <div class="modify-limit">
+                Modify Transfer Limit
+            </div>
+
+            <div class="input-group">
+                <div class="label">Purpose *</div>
+                <div class="input-wrapper">
+                    <input type="text" value="Eye glassrs">
+                </div>
+            </div>
+
+            <div class="accordion">
+                <div class="accordion-title">Schedule and Shortcuts</div>
+                <div class="chevron-down"></div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <button class="btn-primary">TRANSFER</button>
+        </div>
+    </div>
+</body>
+</html>

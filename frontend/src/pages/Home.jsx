@@ -4,10 +4,12 @@ import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/PageWrapper";
 import FeedbackModal from "../components/FeedbackModal";
+import SlideButton from "../components/SlideButton";
+import BankDemoGate from "../components/BankDemoGate";
 import { Search, ChevronDown, Building2, Bell, ShieldCheck, Zap, X, Check, QrCode, ClipboardCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { BANK_STYLES, DEFAULT_BANK_STYLE, bankStyle, BANK_ALIASES, BANK_LOGOS, FALLBACK_BANKS } from "../utils/banks";
+import { BANK_STYLES, DEFAULT_BANK_STYLE, bankStyle, BANK_ALIASES, BANK_LOGOS, FALLBACK_BANKS, getBankLogoByName } from "../utils/banks";
 
 export default function Home() {
   const { user, refreshProfile } = useAuth();
@@ -35,11 +37,34 @@ export default function Home() {
   const [sent, setSent] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
+  // Real lookup history — backs the "Recent recipients" cards and the
+  // accounts-checked / scams-flagged stats, instead of hardcoded demo values.
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
   const activeRequest = useRef(null);
+
+  const fetchHistory = () => {
+    api.get("/api/history")
+      .then((res) => setHistory(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false));
+  };
 
   useEffect(() => {
     refreshProfile();
+    fetchHistory();
   }, []);
+
+  const accountsChecked = history.length;
+  const scamsFlagged = history.filter((item) => item.score < 30).length;
+  const recentRecipients = history.slice(0, 3);
+
+  const getScoreVisuals = (score) => {
+    if (score < 30) return { color: "text-risk-critical", border: "border-risk-critical" };
+    if (score < 70) return { color: "text-risk-neutral", border: "border-risk-neutral" };
+    return { color: "text-trust-high", border: "border-trust-high" };
+  };
 
   // Live bank list from Paystack (proxied by the backend so the secret key
   // stays server-side). Keeps FALLBACK_BANKS on any failure.
@@ -126,7 +151,8 @@ export default function Home() {
         if (activeRequest.current === requestId) {
           setTrustData(response.data);
           setIsSubmitting(false);
-          refreshProfile(); 
+          refreshProfile();
+          fetchHistory();
         }
       }, frictionMs);
 
@@ -213,7 +239,6 @@ export default function Home() {
             </div>
             <div className="relative w-[44px] h-[44px] rounded-[14px] bg-white flex items-center justify-center shadow-card-xs">
               <Bell className="text-ink w-[21px] h-[21px]" strokeWidth={2} />
-              <div className="absolute top-[9px] right-[10px] w-2 h-2 rounded-full bg-risk-critical border-2 border-white"></div>
             </div>
           </div>
 
@@ -227,7 +252,7 @@ export default function Home() {
                 <span className="font-bold text-[11px] tracking-[0.1em] uppercase text-white/85">Vero shield · active</span>
               </div>
               <div className="w-[38px] h-[38px] rounded-[12px] bg-white flex items-center justify-center shadow-[0_6px_16px_rgba(0,80,30,0.18)]">
-                <img src="/vero-icon.svg" alt="Vero" className="w-[26px] h-[26px] object-contain" />
+                <img src="/vero-logo.png" alt="Vero" className="w-[22px] h-[22px] object-contain" />
               </div>
             </div>
             
@@ -237,11 +262,11 @@ export default function Home() {
             
             <div className="flex gap-[11px] mt-5 relative">
               <div className="flex-1 bg-white/18 rounded-[16px] p-[13px_15px]">
-                <div className="text-[22px] font-extrabold text-white">38</div>
+                <div className="text-[22px] font-extrabold text-white">{accountsChecked}</div>
                 <div className="text-[11.5px] text-white/80 font-semibold mt-px">Accounts checked</div>
               </div>
               <div className="flex-1 bg-white/18 rounded-[16px] p-[13px_15px]">
-                <div className="text-[22px] font-extrabold text-white">3</div>
+                <div className="text-[22px] font-extrabold text-white">{scamsFlagged}</div>
                 <div className="text-[11.5px] text-white/80 font-semibold mt-px">Scams flagged</div>
               </div>
             </div>
@@ -263,6 +288,9 @@ export default function Home() {
             <span className="text-slate text-[20px] font-bold shrink-0">›</span>
           </button>
 
+          {/* ECX HackX in-app demo — banner + one-time first-open prompt */}
+          <BankDemoGate />
+
           {/* Recent Recipients */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
@@ -270,31 +298,37 @@ export default function Home() {
               <Link to="/history" className="text-[12px] font-bold text-trust-high hover:underline">See all</Link>
             </div>
 
-            <div className="flex gap-[11px]">
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("1000000007"); setSelectedBank(banks.find(b => b.code === "032") || selectedBank); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-trust-high text-[17px] border-[2.5px] border-trust-high overflow-hidden">
-                  {BANK_LOGOS["032"] ? <img src={BANK_LOGOS["032"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "A"}
-                </div>
-                <div className="text-[12px] font-bold text-ink">Adaeze</div>
-                <div className="text-[11px] font-extrabold text-trust-high">92</div>
+            {!historyLoading && recentRecipients.length === 0 ? (
+              <div className="bg-white rounded-[18px] p-5 text-center shadow-card-xs">
+                <div className="text-[13px] text-slate font-semibold">No lookups yet — check your first account above.</div>
               </div>
-
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("9876543210"); setSelectedBank(banks.find(b => b.code === "058") || selectedBank); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-neutral text-[17px] border-[2.5px] border-risk-neutral overflow-hidden">
-                  {BANK_LOGOS["058"] ? <img src={BANK_LOGOS["058"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "B"}
-                </div>
-                <div className="text-[12px] font-bold text-ink">Blessing</div>
-                <div className="text-[11px] font-extrabold text-risk-neutral">54</div>
+            ) : (
+              <div className="flex gap-[11px]">
+                {recentRecipients.map((item) => {
+                  const { color, border } = getScoreVisuals(item.score);
+                  const logo = getBankLogoByName(item.bank);
+                  const initial = (item.name || item.nuban || "?").charAt(0).toUpperCase();
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow"
+                      onClick={() => {
+                        setNuban(item.nuban);
+                        const matchedBank = item.bank && banks.find(b => b.name.toLowerCase() === item.bank.toLowerCase());
+                        if (matchedBank) setSelectedBank(matchedBank);
+                        setShowLookup(true);
+                      }}
+                    >
+                      <div className={`w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold ${color} text-[17px] border-[2.5px] ${border} overflow-hidden`}>
+                        {logo ? <img src={logo} alt={item.bank} className="w-full h-full object-cover" /> : initial}
+                      </div>
+                      <div className="text-[12px] font-bold text-ink truncate max-w-full">{item.name || "Unknown"}</div>
+                      <div className={`text-[11px] font-extrabold ${color}`}>{item.score}</div>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div className="flex-1 flex flex-col items-center gap-2 bg-white rounded-[18px] p-[15px_6px] shadow-card-xs cursor-pointer hover:shadow-card-sm transition-shadow" onClick={() => { setNuban("0987654321"); setSelectedBank(banks.find(b => b.code === "044") || selectedBank); setShowLookup(true); }}>
-                <div className="w-[46px] h-[46px] rounded-[14px] bg-canvas flex items-center justify-center font-bold text-risk-critical text-[17px] border-[2.5px] border-risk-critical overflow-hidden">
-                  {BANK_LOGOS["044"] ? <img src={BANK_LOGOS["044"]} alt="Bank Logo" className="w-full h-full object-cover" /> : "C"}
-                </div>
-                <div className="text-[12px] font-bold text-ink">Chidi</div>
-                <div className="text-[11px] font-extrabold text-risk-critical">12</div>
-              </div>
-            </div>
+            )}
 
             {/* Pro Banner */}
             {!user?.isPremium && (
@@ -690,11 +724,11 @@ export default function Home() {
             <button onClick={() => setShowReportModal(true)} className={`w-full font-semibold py-[17px] rounded-full text-[16px] border-none ${btnStyle}`}>
               Report this account
             </button>
+          ) : score >= 70 ? (
+            <SlideButton label="Slide to send" onComplete={handleProceed} />
           ) : (
             <button onClick={handleProceed} className={`w-full font-semibold py-[17px] rounded-full text-[16px] border-none ${btnStyle} flex items-center justify-center gap-3`}>
-              {score >= 70 ? (
-                <>Slide to send</> // Note: UI simplified for now to match 6a/b/c exactly which just has text
-              ) : isUnverified ? "Proceed carefully" : "Proceed with caution"}
+              {isUnverified ? "Proceed carefully" : "Proceed with caution"}
             </button>
           )}
 

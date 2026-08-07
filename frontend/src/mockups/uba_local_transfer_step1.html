@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Transfer - Step 1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #F0F4F8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #1E293B;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #FFFFFF;
+            min-height: 100vh;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background-color: #fff;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            color: #64748B;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            color: #D40000;
+        }
+
+        .header-title-container {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: -0.2px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .logo {
+            display: flex;
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .logo-part1 {
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            border-radius: 10px 0 10px 0;
+            position: absolute;
+            left: 0;
+            transform: skewX(-15deg);
+        }
+
+        .logo-part2 {
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            opacity: 0.8;
+            border-radius: 0 10px 0 10px;
+            position: absolute;
+            right: 0;
+            top: 4px;
+            transform: skewX(-15deg);
+            z-index: 1;
+        }
+
+        .progress-bar-container {
+            height: 3px;
+            background-color: #F1F5F9;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #D40000 0%, #FF3B30 100%);
+            width: 33.33%;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .content {
+            padding: 28px 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            letter-spacing: -0.1px;
+        }
+
+        /* Custom Sleek Div Components */
+        .input-wrapper, .transfer-to-input {
+            position: relative;
+            background-color: #FFFFFF;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .input-wrapper:hover, .transfer-to-input:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+        }
+
+        .input-wrapper:active, .transfer-to-input:active {
+            border-color: #D40000;
+        }
+
+        .selected-value {
+            font-size: 15px;
+            color: #0F172A;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+        
+        .transfer-to-input {
+            flex-grow: 1;
+            cursor: text;
+        }
+
+        .transfer-to-input input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #0F172A;
+            width: 100%;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chevron-down {
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid #64748B;
+            border-bottom: 2px solid #64748B;
+            transform: rotate(45deg);
+            margin-bottom: 4px;
+            pointer-events: none;
+            flex-shrink: 0;
+            margin-left: 12px;
+            transition: transform 0.2s ease;
+        }
+        
+        .input-wrapper:hover .chevron-down {
+            border-color: #334155;
+        }
+
+        .transfer-to-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .clear-icon {
+            background-color: #94A3B8;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .clear-icon:hover {
+            background-color: #64748B;
+        }
+
+        .contact-btn {
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            border: 1.5px solid #E2E8F0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+        
+        .contact-btn:hover {
+            background: #E2E8F0;
+            border-color: #CBD5E1;
+        }
+
+        .contact-btn svg {
+            fill: #D40000;
+            width: 24px;
+            height: 24px;
+        }
+
+        .bank-selector {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .bank-logo {
+            color: #00BFA5;
+            font-weight: 700;
+            font-size: 13px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            background: #E6F8F5;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        
+        .bank-logo span {
+            color: #0F172A;
+            margin-left: 2px;
+        }
+
+        .currency-label {
+            font-size: 13px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .currency-value {
+            font-size: 16px;
+            color: #334155;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #E2E8F0;
+            margin: 8px 0;
+        }
+
+        .beneficiary-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #F8FAFC;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #F1F5F9;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(71,85,105,0.2);
+        }
+
+        .beneficiary-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .beneficiary-label {
+            font-size: 13px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .beneficiary-name {
+            font-size: 15px;
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 4px 0;
+        }
+
+        .toggle-label {
+            font-size: 15px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background-color: #D40000;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 22px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .footer {
+            padding: 24px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F1F5F9;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #E51920 0%, #A31015 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 8px 24px rgba(211, 17, 24, 0.25);
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(211, 17, 24, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </div>
+            <div class="header-title-container">
+                <div class="header-title">New Local Transfer</div>
+                <div class="header-subtitle">Step 1 of 3</div>
+            </div>
+            <div class="logo">
+                <div class="logo-part1"></div>
+                <div class="logo-part2"></div>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <div class="content">
+            <div class="input-group">
+                <div class="label">Transfer From *</div>
+                <div class="input-wrapper custom-select">
+                    <div class="selected-value">SAVINGS ACCOUNT-GEN... &mdash; ₦ 40.83</div>
+                    <div class="chevron-down"></div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label">Transfer To *</div>
+                <div class="transfer-to-row">
+                    <div class="transfer-to-input">
+                        <input type="text" value="8124759358" readonly>
+                        <div class="clear-icon">&#10005;</div>
+                    </div>
+                    <div class="contact-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            <circle cx="17" cy="8" r="1.5" fill="#D40000"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="label">Bank Name</div>
+                <div class="input-wrapper custom-select">
+                    <div class="bank-selector">
+                        <div class="bank-logo">O<span>Pay</span></div>
+                        <div class="selected-value">Opay</div>
+                    </div>
+                    <div class="chevron-down"></div>
+                </div>
+            </div>
+
+            <div class="input-group" style="gap: 4px; margin-top: 4px;">
+                <div class="currency-label">Currency</div>
+                <div class="currency-value">Nigerian Naira NGN</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="beneficiary-info">
+                <div class="avatar">VC</div>
+                <div class="beneficiary-details">
+                    <div class="beneficiary-label">Beneficiary name</div>
+                    <div class="beneficiary-name">VALENTINE CHINEDU ALFRED</div>
+                </div>
+            </div>
+
+            <div class="toggle-row">
+                <div class="toggle-label">Save to my list of beneficiaries</div>
+                <div class="toggle-switch"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <button class="btn-primary">CONTINUE</button>
+        </div>
+    </div>
+</body>
+</html>

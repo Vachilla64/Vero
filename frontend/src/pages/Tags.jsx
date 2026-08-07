@@ -5,17 +5,35 @@ import { Search, Tag as TagIcon, Plus } from "lucide-react";
 export default function Tags() {
   const [nuban, setNuban] = useState("1234567890"); // Default for demo
   const [newTag, setNewTag] = useState("");
-  
+  const [justSaved, setJustSaved] = useState(false);
+
   // Dummy data for demo purposes
-  const tags = [
+  const [tags, setTags] = useState([
     { label: "Legit thrift store", count: 34, isPositive: true },
     { label: "Fast delivery", count: 12, isPositive: true },
     { label: "Delayed once", count: 3, isPositive: false },
-  ];
+  ]);
 
   const suggestedTags = [
     "Legit", "Slow to respond", "Verified business", "Great communication"
   ];
+
+  const handleSaveTag = () => {
+    const label = newTag.trim();
+    if (!label) return;
+
+    setTags((prev) => {
+      const existing = prev.find((t) => t.label.toLowerCase() === label.toLowerCase());
+      if (existing) {
+        return prev.map((t) => t === existing ? { ...t, count: t.count + 1 } : t);
+      }
+      return [{ label, count: 1, isPositive: true }, ...prev];
+    });
+
+    setNewTag("");
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1800);
+  };
 
   return (
     <PageWrapper className="bg-canvas min-h-screen pt-12 pb-28 px-5 overflow-y-auto no-scrollbar">
@@ -84,11 +102,12 @@ export default function Tags() {
           ))}
         </div>
         
-        <button 
-          disabled={!newTag}
+        <button
+          onClick={handleSaveTag}
+          disabled={!newTag.trim()}
           className="w-full bg-ink text-white font-bold py-4 rounded-full text-[16px] shadow-card disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
         >
-          Save tag
+          {justSaved ? "Saved!" : "Save tag"}
         </button>
       </div>
 

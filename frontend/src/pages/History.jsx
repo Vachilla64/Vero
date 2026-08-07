@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../lib/api";
+import { getBankLogoByName } from "../utils/banks";
 import { AlertCircle, Search, ShieldCheck } from "lucide-react";
 import PageWrapper from "../components/PageWrapper";
 
@@ -25,9 +26,9 @@ export default function History() {
   }, []);
 
   const getScoreVisuals = (score) => {
-    if (score < 50) return { color: "text-trust-red", bg: "bg-trust-red/10" };
-    if (score < 70) return { color: "text-trust-amber", bg: "bg-trust-amber/10" };
-    return { color: "text-trust-green", bg: "bg-trust-green/10" };
+    if (score < 50) return { color: "text-risk-critical", bg: "bg-risk-critical/10" };
+    if (score < 70) return { color: "text-risk-neutral", bg: "bg-risk-neutral/10" };
+    return { color: "text-trust-high", bg: "bg-trust-high/10" };
   };
 
   const filteredHistory = history.filter((item) =>
@@ -66,7 +67,7 @@ export default function History() {
 
         {/* Search (Preserved for functionality) */}
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-2.5 text-secondary" size={16} />
+          <Search className="absolute left-3 top-2.5 text-slate" size={16} />
           <input
             type="text"
             placeholder="Search by NUBAN..."
@@ -82,12 +83,12 @@ export default function History() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ink"></div>
           </div>
         ) : error ? (
-          <div className="p-4 bg-trust-red/10 text-trust-red text-sm rounded-xl flex items-center gap-2">
+          <div className="p-4 bg-risk-critical/10 text-risk-critical text-sm rounded-xl flex items-center gap-2">
             <AlertCircle size={18} />
             <p>{error}</p>
           </div>
         ) : filteredHistory.length === 0 ? (
-          <div className="text-center py-16 text-secondary flex flex-col items-center gap-3">
+          <div className="text-center py-16 text-slate flex flex-col items-center gap-3">
             <ShieldCheck size={48} className="opacity-20" />
             <p className="text-sm font-medium">
               {searchTerm ? "No lookups found matching that NUBAN." : "You haven't run any lookups yet."}
@@ -99,7 +100,7 @@ export default function History() {
               if (items.length === 0) return null;
               return (
                 <div key={label}>
-                  <div className="text-[11px] font-bold text-secondary uppercase tracking-[0.06em] mb-2.5">
+                  <div className="text-[11px] font-bold text-slate uppercase tracking-[0.06em] mb-2.5">
                     {label}
                   </div>
                   <div className="flex flex-col gap-[9px]">
@@ -113,13 +114,19 @@ export default function History() {
                       const displayBank = item.bank || "Bank";
                       const displayNuban = item.nuban ? `••••${item.nuban.slice(-4)}` : "••••0000";
 
+                      const bankLogo = getBankLogoByName(item.bank);
+
                       return (
                         <div 
                           key={item.id} 
                           className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-card-xs hover:shadow-card-sm transition-shadow cursor-pointer"
                         >
-                          <div className={`w-[42px] h-[42px] shrink-0 rounded-[12px] bg-canvas flex items-center justify-center font-bold text-[16px] ${color}`}>
-                            {initial}
+                          <div className={`w-[42px] h-[42px] shrink-0 rounded-[12px] bg-canvas flex items-center justify-center font-bold text-[16px] ${color} overflow-hidden`}>
+                            {bankLogo ? (
+                              <img src={bankLogo} alt={displayBank} className="w-full h-full object-cover" />
+                            ) : (
+                              initial
+                            )}
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <div className="text-[15px] font-bold text-ink truncate mb-0.5">

@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 import Upgrade from "./pages/Upgrade";
 import HowItWorks from "./pages/HowItWorks";
 import Onboarding from "./pages/Onboarding";
+import BankDemo from "./pages/BankDemo";
 
 import TopBar from "./components/TopBar";
 import BottomNav from "./components/BottomNav";
@@ -56,6 +57,8 @@ function AppRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<PhoneFrame><Login /></PhoneFrame>} />
+        <Route path="/bank-demo" element={<BankDemo />} />
+        <Route path="/bank-demo/:bankId" element={<BankDemo />} />
         <Route path="/register" element={<PhoneFrame><Register /></PhoneFrame>} />
         <Route
           path="/onboarding"

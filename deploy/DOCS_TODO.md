@@ -22,3 +22,7 @@ doesn't reflect yet. Clear each line out once it's written up there.
   a fallback but shouldn't be the documented address anymore.
 - Caddy config lives at `/etc/caddy/Caddyfile` on the server (not in this repo) —
   reverse-proxies 443 -> localhost:3712. Worth committing a copy to `deploy/` too.
+- The EC2 Postgres needed `npx prisma db push` (schema) + `node prisma/seed.js`
+  (demo accounts) run manually after first deploy — it wasn't part of the
+  docker-compose flow and silently left the DB schemaless. Worth adding an
+  automatic migrate+seed step to the deploy process so this can't be missed again.

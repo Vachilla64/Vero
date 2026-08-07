@@ -20,6 +20,7 @@ export default {
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
         'app': '0 30px 70px rgba(43,52,69,.14), 0 6px 16px rgba(43,52,69,.06)',

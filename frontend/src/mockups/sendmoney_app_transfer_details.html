@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Money</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5; /* Premium Indigo */
+            --primary-hover: #4338CA;
+            --bg-color: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            background-color: var(--bg-color);
+            height: 896px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            border-radius: 40px;
+            border: 8px solid #000; /* iPhone frame effect */
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 44px;
+            background-color: transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            z-index: 10;
+        }
+
+        /* App Bar */
+        .app-bar {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--surface);
+            color: var(--text-main);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        
+        .back-btn:hover {
+            transform: translateX(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .bell-icon-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--surface);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .bell-icon-wrap:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .bell-icon {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-main);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Content area */
+        .content {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Top balance card */
+        .top-balance-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .balance-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        /* Main Transfer Card */
+        .transfer-card {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .transfer-card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Bank Selector */
+        .bank-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: var(--bg-color);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+        }
+
+        .arrow-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .arrow-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .bank-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Input fields */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-field {
+            width: 100%;
+            height: 60px;
+            border: 2px solid transparent;
+            background-color: var(--bg-color);
+            border-radius: var(--radius-md);
+            padding: 0 20px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-field:read-only {
+            cursor: default;
+        }
+
+        .input-field::placeholder {
+            color: #94A3B8;
+        }
+        
+        .input-field:focus:not(:read-only) {
+            border-color: var(--primary);
+            background-color: var(--surface);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: #CBD5E1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .clear-btn:hover {
+            background-color: #94A3B8;
+        }
+
+        .right-text {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .choose-beneficiary {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .choose-beneficiary:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        .beneficiary-name {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .beneficiary-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* Save beneficiary toggle */
+        .save-beneficiary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 0 8px;
+        }
+
+        .save-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .toggle-switch {
+            width: 52px;
+            height: 32px;
+            background-color: var(--primary);
+            border-radius: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        /* Remark info */
+        .remark-info {
+            text-align: right;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .remark-info-wrapper {
+             margin-bottom: 32px;
+        }
+
+        /* Bottom button */
+        .bottom-action {
+            padding: 24px;
+            background-color: var(--surface);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .transfer-btn {
+            width: 100%;
+            height: 60px;
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .transfer-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -3px rgba(79, 70, 229, 0.4);
+        }
+        
+        .transfer-btn:active {
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <!-- Modern mock icons for network/battery -->
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="var(--text-main)"><path d="M1 11h16L9 1 1 11z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text-main)"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+            </div>
+        </div>
+
+        <!-- App Bar -->
+        <div class="app-bar">
+            <div class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </div>
+            <div class="title">Send Money</div>
+            <div class="bell-icon-wrap">
+                <svg class="bell-icon" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            
+            <div class="top-balance-card">
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-text">NGN 40.83</div>
+            </div>
+
+            <!-- Transfer Card -->
+            <div class="transfer-card">
+                <h2>Transfer To</h2>
+                
+                <div class="bank-selector">
+                    <button class="arrow-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <span class="bank-name">Opay</span>
+                    <button class="arrow-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="input-field" value="8124759358" readonly>
+                    <div class="clear-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </div>
+                </div>
+
+                <div class="choose-beneficiary">Choose Beneficiary</div>
+
+                <div class="beneficiary-name">
+                    <div class="beneficiary-avatar">VC</div>
+                    VALENTINE CHINEDU ALFRED
+                </div>
+            </div>
+
+            <div class="save-beneficiary-row">
+                <span class="save-text">Save as beneficiary</span>
+                <div class="toggle-switch"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" class="input-field" value="50,000">
+                <span class="right-text">NGN</span>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 4px;">
+                <input type="text" class="input-field" value="Eye glasses" placeholder="What's this for? (Optional)">
+            </div>
+            <div class="remark-info-wrapper">
+                <div class="remark-info">35 characters max</div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Action -->
+        <div class="bottom-action">
+            <button class="transfer-btn">
+                Continue
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>

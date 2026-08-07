@@ -39,14 +39,14 @@ export default function Upgrade() {
       <div className="flex flex-col flex-1 px-[26px] pb-[26px] pt-4 max-w-md mx-auto w-full min-h-[calc(100vh-60px)]">
         
         <div className="flex items-center justify-start mb-[18px]">
-          <Link to="/settings" className="text-secondary text-[15px] font-semibold no-underline">‹ Back</Link>
+          <Link to="/settings" className="text-slate text-[15px] font-semibold no-underline">‹ Back</Link>
         </div>
 
         {success || user?.isPremium ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center pb-12 animate-fade-in">
             <div className="w-[80px] h-[80px] rounded-full bg-[rgba(255,195,0,0.15)] flex items-center justify-center text-[40px] mb-6">⚡</div>
             <h3 className="text-[24px] font-bold text-ink mb-2">Vero Pro Active</h3>
-            <p className="text-secondary text-[14px] font-medium leading-relaxed max-w-[260px]">
+            <p className="text-slate text-[14px] font-medium leading-relaxed max-w-[260px]">
               You now have unlimited daily verifications and priority alerts.
             </p>
             <button 
@@ -87,7 +87,7 @@ export default function Upgrade() {
             </div>
 
             {error && (
-              <div className="mb-4 text-center text-trust-red text-[13px] font-medium">
+              <div className="mb-4 text-center text-risk-critical text-[13px] font-medium">
                 {error}
               </div>
             )}

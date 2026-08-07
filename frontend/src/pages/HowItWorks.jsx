@@ -17,7 +17,7 @@ export const mockData = {
   recipientName: "KANE ALIYU ALHAJI",
   recipientAccount: "0216633943",
   recipientBank: "Union Bank Of Nigeria",
-  recipientBankLogo: "🐎",
+  recipientBankLogo: "/banks/unionbankng.png",
   recipientBankColor: "bg-blue-400",
   
   // Transaction Details
@@ -276,8 +276,8 @@ export default function HowItWorks() {
                       <div className="text-[14px] text-ink uppercase">{mockData.recipientName}</div>
                       <div className="text-[12px] text-slate mt-1">{mockData.recipientAccount} {mockData.recipientBank}</div>
                     </div>
-                    <div className={`w-8 h-8 ${mockData.recipientBankColor} rounded-full text-white font-bold flex items-center justify-center text-[14px]`}>
-                      {mockData.recipientBankLogo}
+                    <div className={`w-8 h-8 ${mockData.recipientBankColor} rounded-full text-white font-bold flex items-center justify-center text-[14px] overflow-hidden`}>
+                      <img src={mockData.recipientBankLogo} alt="Logo" className="w-full h-full object-cover bg-white" />
                     </div>
                  </div>
               </div>
@@ -306,7 +306,10 @@ export default function HowItWorks() {
             <div className="p-4 flex-1 overflow-y-auto">
               <div className="flex items-center gap-3 mb-6 bg-transparent px-2">
                  <div className={`w-12 h-12 ${mockData.recipientBankColor} rounded-full text-white flex items-center justify-center text-xl relative`}>
-                   {mockData.recipientBankLogo} <div className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-[8px]">▲</div>
+                   <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                     <img src={mockData.recipientBankLogo} alt="Logo" className="w-full h-full object-cover" />
+                   </div>
+                   <div className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-[8px] border-2 border-white">▲</div>
                  </div>
                  <div>
                    <div className="text-[14px] font-bold text-ink uppercase">{mockData.recipientName}</div>
@@ -329,7 +332,7 @@ export default function HowItWorks() {
                       onClick={() => setAmount(mockData.transferAmount)}
                     />
                     {amount === mockData.transferAmount && mockData.transferAmountNumber >= 10000 && (
-                      <div className="absolute -top-4 left-10 bg-surface0 text-white text-[10px] px-2 py-0.5 rounded opacity-80 whitespace-nowrap">
+                      <div className="absolute -top-4 left-10 bg-ink text-white text-[10px] px-2 py-0.5 rounded opacity-80 whitespace-nowrap">
                         Tens of Thousands
                       </div>
                     )}
@@ -401,7 +404,7 @@ export default function HowItWorks() {
                          <span className="text-slate">Amount</span>
                          <div className="flex flex-col items-end">
                            {mockData.transferAmountNumber >= 10000 && (
-                             <div className="bg-surface0 text-white text-[10px] px-2 py-0.5 rounded opacity-80 mb-1">Tens of Thousands</div>
+                             <div className="bg-ink text-white text-[10px] px-2 py-0.5 rounded opacity-80 mb-1">Tens of Thousands</div>
                            )}
                            <span className="font-bold text-[16px]">₦{mockData.transferAmount}</span>
                          </div>

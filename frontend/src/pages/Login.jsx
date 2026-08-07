@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Mail, Lock } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,9 +26,22 @@ export default function Login() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-surface font-sans overflow-y-auto no-scrollbar">
-      <div className="flex-1 flex flex-col px-[26px] pb-[26px] pt-12 max-w-md mx-auto w-full overflow-hidden">
-        <div className="text-center font-extrabold text-[17px] text-ink tracking-[.04em] mb-[28px]">VERO</div>
+    <div className="h-full flex flex-col bg-surface font-sans overflow-y-auto no-scrollbar relative">
+      {/* Brand glow */}
+      <div className="absolute top-[-12%] left-1/2 -translate-x-1/2 w-[140%] h-[260px] bg-gradient-to-b from-trust-high/12 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
+
+      <div className="flex-1 flex flex-col px-[26px] pb-[26px] pt-12 max-w-md mx-auto w-full relative">
+        {/* Brand mark */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center mb-8"
+        >
+          <img src="/vero-logo.png" alt="Vero" className="w-16 h-16 object-contain mb-2 drop-shadow-[0_6px_14px_rgba(0,200,83,0.25)]" />
+          <div className="font-extrabold text-[17px] text-ink tracking-[.04em]">VERO</div>
+          <div className="text-[12.5px] text-slate font-semibold mt-1">Verify before you send</div>
+        </motion.div>
 
         <div className="flex bg-hairline rounded-[14px] p-1 mb-[26px]">
           <Link to="/register" className="flex-1 text-center p-[10px] rounded-[11px] text-[14px] font-semibold text-slate hover:text-ink transition-colors">Create account</Link>
@@ -41,27 +56,33 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1">
           <div className="flex flex-col gap-3">
-            <div className="bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs">
-              <div className="font-bold text-[11px] tracking-[.06em] uppercase text-slate mb-1">Email</div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
-                placeholder="you@example.com"
-              />
+            <div className="flex items-center gap-3 bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs border border-transparent focus-within:border-trust-high/30 transition-colors">
+              <Mail size={17} className="text-slate shrink-0" />
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="font-bold text-[11px] tracking-[.06em] uppercase text-slate mb-1">Email</div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
+                  placeholder="you@example.com"
+                />
+              </div>
             </div>
-            <div className="bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs">
-              <div className="font-bold text-[11px] tracking-[.06em] uppercase text-slate mb-1">Password</div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
-                placeholder="••••••••"
-              />
+            <div className="flex items-center gap-3 bg-white rounded-[14px] px-4 py-[13px] shadow-card-xs border border-transparent focus-within:border-trust-high/30 transition-colors">
+              <Lock size={17} className="text-slate shrink-0" />
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="font-bold text-[11px] tracking-[.06em] uppercase text-slate mb-1">Password</div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full text-[15px] font-semibold text-ink bg-transparent focus:outline-none placeholder-gray-300"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
           </div>
 
@@ -75,16 +96,6 @@ export default function Login() {
             </button>
           </div>
         </form>
-
-        <div className="flex items-center gap-[10px] my-[18px]">
-          <div className="flex-1 h-px bg-hairline"></div>
-          <span className="text-[12px] text-slate font-semibold">or</span>
-          <div className="flex-1 h-px bg-hairline"></div>
-        </div>
-
-        <button type="button" className="w-full bg-white text-ink border-[1.5px] border-hairline font-semibold text-[16px] p-[17px] rounded-full cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.98]">
-          Continue with Google
-        </button>
 
         <div className="text-center mt-auto pt-5 text-slate text-[13px] font-medium">
           Don't have an account? <Link to="/register" className="text-trust-high font-bold hover:underline">Create one</Link>

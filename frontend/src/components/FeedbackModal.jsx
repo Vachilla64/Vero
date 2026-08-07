@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 const FACES = [
   { id: 'angry', color: '#FF4B4B', bgClass: 'bg-risk-critical', bgLightClass: 'bg-risk-critical/20', borderClass: 'border-risk-critical', label: 'Angry', icon: '😠' },
@@ -27,7 +28,9 @@ export default function FeedbackModal({ isOpen, onClose, onSubmit }) {
         <div className="w-full flex justify-between items-center mb-6">
           <div className="w-6"></div>
           <h2 className="font-bold text-xl text-ink">Feedback</h2>
-          <button onClick={onClose} className="w-6 font-bold text-slate hover:text-ink">⋮</button>
+          <button onClick={onClose} className="w-6 flex items-center justify-center text-slate hover:text-ink">
+            <X size={18} />
+          </button>
         </div>
 
         <p className="text-slate font-medium text-sm mb-8">Rate your experience</p>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opay - Transfer to Bank Account</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #F8F9FA;
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            background-color: #FFFFFF;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 16px;
+            background-color: #FFFFFF;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 400;
+        }
+
+        .header-right {
+            color: var(--primary-green);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 0 16px 20px 16px;
+        }
+
+        /* Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #E0F7FA 0%, #E8F5E9 100%);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .promo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1;
+        }
+
+        .promo-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .promo-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .promo-price span {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .claim-btn {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 1;
+        }
+
+        /* Free transfers notice */
+        .free-transfers {
+            background-color: #F3E5F5;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #7B1FA2;
+            font-weight: 500;
+        }
+
+        .free-transfers span {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        /* Form Section */
+        .form-section {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .account-input {
+            width: 100%;
+            font-size: 20px;
+            border: none;
+            outline: none;
+            padding: 8px 0;
+            border-bottom: 1px solid #EEEEEE;
+            font-family: inherit;
+            color: #333;
+            margin-bottom: 24px;
+        }
+        
+        .account-input::placeholder {
+            color: #BDBDBD;
+        }
+
+        .bank-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #EEEEEE;
+            margin-bottom: 24px;
+        }
+
+        .bank-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bank-logo {
+            width: 32px;
+            height: 32px;
+            background-color: #D32F2F;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .bank-name {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chevron-right {
+            color: #BDBDBD;
+            font-size: 16px;
+        }
+
+        .validated-name {
+            background-color: #E8F5E9;
+            color: var(--primary-green);
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-green);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Success Rate */
+        .success-rate {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        .success-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .monitor-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #E0F2F1;
+            color: var(--primary-green);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid #EEEEEE;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            position: relative;
+        }
+
+        .tab {
+            font-size: 16px;
+            font-weight: 500;
+            color: #757575;
+            padding-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--primary-green);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .search-icon {
+            margin-left: auto;
+            color: var(--primary-green);
+            font-size: 18px;
+        }
+
+        /* Recent List */
+        .recent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #FAFAFA;
+        }
+
+        .recent-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .recent-name {
+            font-size: 15px;
+            color: #333;
+        }
+
+        .recent-details {
+            font-size: 13px;
+            color: #9E9E9E;
+        }
+        
+        .bank-icon-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #F5F5F5;
+        }
+
+    
+        /* Aesthetic Upgrades */
+        :root {
+            --primary-green: #00D09E;
+            --primary-green-dark: #00A37A;
+            --primary-gradient: linear-gradient(135deg, #00D09E 0%, var(--primary-green) 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-green: 0 8px 20px rgba(0, 208, 158, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F4F6F8;
+        }
+
+        .app-container {
+            box-shadow: 0 24px 48px rgba(0,0,0,0.1) !important;
+        }
+
+        button, .tab, .recent-item, .pm-option, .add-card-btn, .preset-btn, .tag-btn {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        button:hover:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(-2px);
+        }
+        
+        button:active:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(0);
+        }
+
+        input {
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            border-bottom-color: var(--primary-green) !important;
+            box-shadow: 0 1px 0 var(--primary-green) !important;
+        }
+        
+        .next-btn, .claim-btn, .btn-continue, .confirm-btn {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .next-btn:hover, .claim-btn:hover, .btn-continue:hover, .confirm-btn:hover {
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .overlay {
+            background-color: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .modal {
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.15) !important;
+            border-top: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .form-section, .card, .success-rate, .pm-options, .details-card {
+            box-shadow: var(--shadow-md) !important;
+            border: 1px solid rgba(255,255,255,0.9) !important;
+            background: rgba(255,255,255,0.8) !important;
+            backdrop-filter: blur(20px);
+        }
+        
+        .tab:hover {
+            color: var(--primary-green);
+        }
+        
+        .preset-btn:hover, .tag-btn:hover {
+            background-color: #E8F5E9 !important;
+            color: var(--primary-green-dark) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .pay-btn {
+            transition: var(--transition);
+        }
+        
+        /* Specific override for enabled pay button as per mockup */
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]) {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .radio-outer {
+            transition: var(--transition);
+        }
+        .pm-option:hover .radio-outer:not(.selected) {
+            border-color: #00D09E;
+        }
+        
+        .recent-item:hover, .pm-option:hover {
+            background-color: #F8FAFC;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <a href="#" class="back-btn" style="display:flex; align-items:center; text-decoration:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+                <span>Transfer to Bank Account</span>
+            </div>
+            <div class="header-right">History</div>
+        </div>
+
+        <div class="content">
+            <!-- Promo Banner -->
+            <div class="promo-banner">
+                <div class="promo-text">
+                    <span class="promo-title">Claim 15 Discounts with</span>
+                    <div class="promo-price">
+                        ₦ 99 <span>on any Bill</span>
+                    </div>
+                </div>
+                <button class="claim-btn">Claim</button>
+            </div>
+
+            <!-- Free Transfers -->
+            <div class="free-transfers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+                Free transfers for the day: <span>3</span>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-section">
+                <label class="input-label">Recipient Account</label>
+                <input type="text" class="account-input" value="2279612300" placeholder="Account Number">
+
+                <div class="bank-selector">
+                    <div class="bank-info">
+                        <div class="bank-logo">UBA</div>
+                        <span class="bank-name">United Bank For Africa</span>
+                    </div>
+                    <span class="chevron-right" style="display:flex; align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
+                </div>
+
+                <div class="validated-name">
+                    <div class="check-icon" style="background: var(--primary-gradient);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                    VALENTINE CHINEDU ALFRED
+                </div>
+
+                <button class="next-btn">Next</button>
+            </div>
+
+            <!-- Success Rate -->
+            <div class="success-rate">
+                <div class="success-left">
+                    <div class="monitor-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </div>
+                    Bank Transfer Success Rate Monitor
+                </div>
+                <span class="chevron-right" style="display:flex; align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active">Recents</div>
+                <div class="tab">Favourites</div>
+                <div class="search-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Recent List -->
+            <div class="recent-list">
+                <div class="recent-item">
+                    <div class="recent-info">
+                        <span class="recent-name">NANCY AMARACHI ALFRED</span>
+                        <span class="recent-details">9036406183 PalmPay</span>
+                    </div>
+                    <div class="bank-icon-small">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#7B1FA2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="recent-item">
+                    <div class="recent-info">
+                        <span class="recent-name">POS Transfer - ANTHONY OKOLORIE</span>
+                        <span class="recent-details">...</span>
+                    </div>
+                    <div class="bank-icon-small">
+                        <div style="width:16px; height:16px; background:#1976D2; border-radius:50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

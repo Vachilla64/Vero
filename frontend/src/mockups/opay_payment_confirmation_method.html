@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opay - Payment Confirmation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #F8F9FA;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            background-color: #F8F9FA;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+        }
+        
+        /* Modal Bottom Sheet */
+        .modal {
+            background-color: #FFFFFF;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            position: absolute;
+            bottom: 0;
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 10px 20px;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            color: #757575;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .use-pin-link {
+            color: var(--primary-green);
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        /* Content */
+        .modal-content {
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Amount */
+        .amount-display {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin: 16px 0 32px 0;
+        }
+        
+        .amount-display span {
+            font-size: 24px;
+            vertical-align: super;
+            margin-right: 2px;
+        }
+
+        /* Transaction List */
+        .tx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tx-label {
+            color: #9E9E9E;
+            font-size: 14px;
+        }
+
+        .tx-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .bank-logo-small {
+            width: 20px;
+            height: 20px;
+            background-color: #D32F2F;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 6px;
+            font-weight: bold;
+        }
+
+        /* Tooltip */
+        .tooltip-inline {
+            background-color: #E8F5E9;
+            color: var(--primary-green);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            position: absolute;
+            top: -20px;
+            right: 0;
+            white-space: nowrap;
+        }
+        
+        .tooltip-inline::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 10px;
+            border-width: 4px 4px 0;
+            border-style: solid;
+            border-color: #E8F5E9 transparent transparent transparent;
+        }
+
+        /* Payment Method Section */
+        .pm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .pm-title {
+            color: #9E9E9E;
+            font-size: 14px;
+        }
+
+        .pm-all {
+            color: #757575;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Payment Options Container */
+        .pm-options {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.03);
+            border: 1px solid #F5F5F5;
+            padding: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .pm-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .pm-option:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Radio Buttons */
+        .radio-outer {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #E0E0E0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2px;
+        }
+        
+        .radio-outer.selected {
+            border-color: var(--primary-green);
+        }
+        
+        .radio-inner {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-green);
+            display: none;
+        }
+        
+        .radio-outer.selected .radio-inner {
+            display: block;
+        }
+
+        /* Option Text */
+        .pm-text {
+            flex: 1;
+        }
+
+        .pm-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1A1A1A;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .pm-name.disabled {
+            color: #9E9E9E;
+        }
+
+        .info-icon {
+            color: #9E9E9E;
+            font-size: 12px;
+            border: 1px solid #9E9E9E;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pm-error {
+            color: #D32F2F;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* Add Money Link */
+        .add-money {
+            color: var(--primary-green);
+            font-size: 14px;
+            font-weight: 500;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Separator */
+        .pm-separator {
+            height: 1px;
+            background-color: #F5F5F5;
+            margin: 16px 0;
+            border-top: 1px dashed #E0E0E0;
+        }
+
+        /* Add Card Button */
+        .add-card-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px;
+            background-color: #FAFAFA;
+            border: 1px solid #EEEEEE;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+        
+        .plus-icon {
+            font-size: 20px;
+            color: #757575;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 16px 20px 24px 20px;
+            border-top: 1px solid #F5F5F5;
+        }
+
+        .pay-btn {
+            width: 100%;
+            background-color: #B2DFDB; /* Disabled state */
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
+    
+        /* Aesthetic Upgrades */
+        :root {
+            --primary-green: #00D09E;
+            --primary-green-dark: #00A37A;
+            --primary-gradient: linear-gradient(135deg, #00D09E 0%, var(--primary-green) 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-green: 0 8px 20px rgba(0, 208, 158, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F4F6F8;
+        }
+
+        .app-container {
+            box-shadow: 0 24px 48px rgba(0,0,0,0.1) !important;
+        }
+
+        button, .tab, .recent-item, .pm-option, .add-card-btn, .preset-btn, .tag-btn {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        button:hover:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(-2px);
+        }
+        
+        button:active:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(0);
+        }
+
+        input {
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            border-bottom-color: var(--primary-green) !important;
+            box-shadow: 0 1px 0 var(--primary-green) !important;
+        }
+        
+        .next-btn, .claim-btn, .btn-continue, .confirm-btn {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .next-btn:hover, .claim-btn:hover, .btn-continue:hover, .confirm-btn:hover {
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .overlay {
+            background-color: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .modal {
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.15) !important;
+            border-top: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .form-section, .card, .success-rate, .pm-options, .details-card {
+            box-shadow: var(--shadow-md) !important;
+            border: 1px solid rgba(255,255,255,0.9) !important;
+            background: rgba(255,255,255,0.8) !important;
+            backdrop-filter: blur(20px);
+        }
+        
+        .tab:hover {
+            color: var(--primary-green);
+        }
+        
+        .preset-btn:hover, .tag-btn:hover {
+            background-color: #E8F5E9 !important;
+            color: var(--primary-green-dark) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .pay-btn {
+            transition: var(--transition);
+        }
+        
+        /* Specific override for enabled pay button as per mockup */
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]) {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .radio-outer {
+            transition: var(--transition);
+        }
+        .pm-option:hover .radio-outer:not(.selected) {
+            border-color: #00D09E;
+        }
+        
+        .recent-item:hover, .pm-option:hover {
+            background-color: #F8FAFC;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background Mockup -->
+        <div style="width: 100%; height: 100%; background: #fff;"></div>
+
+        <div class="overlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="close-btn" style="display:flex; align-items:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                    <div class="use-pin-link">Use Payment PIN</div>
+                </div>
+                
+                <div class="modal-content">
+                    <div class="amount-display">
+                        <span>₦</span>50,000.00
+                    </div>
+
+                    <div class="tx-list">
+                        <div class="tx-item">
+                            <span class="tx-label">Bank</span>
+                            <span class="tx-value">
+                                <span class="bank-logo-small">UBA</span>
+                                United Bank For Africa
+                            </span>
+                        </div>
+                        <div class="tx-item">
+                            <span class="tx-label">Account Number</span>
+                            <span class="tx-value">2279612300</span>
+                        </div>
+                        <div class="tx-item">
+                            <span class="tx-label">Name</span>
+                            <span class="tx-value">VALENTINE CHINEDU ALFRED</span>
+                        </div>
+                        <div class="tx-item">
+                            <span class="tx-label">Amount</span>
+                            <span class="tx-value">
+                                <div class="tooltip-inline">Tens of Thousands</div>
+                                ₦50,000.00
+                            </span>
+                        </div>
+                        <div class="tx-item">
+                            <span class="tx-label">Fee</span>
+                            <span class="tx-value">₦0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="pm-header">
+                        <span class="pm-title">Payment Method</span>
+                        <span class="pm-all" style="display:flex; align-items:center;">All <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
+                    </div>
+
+                    <div class="pm-options">
+                        <div class="pm-option">
+                            <div class="radio-outer selected">
+                                <div class="radio-inner"></div>
+                            </div>
+                            <div class="pm-text">
+                                <div class="pm-name">Available Balance (₦5.12) <span class="info-icon">i</span></div>
+                                <div class="pm-error">Insufficient balance</div>
+                            </div>
+                        </div>
+                        
+                        <div class="pm-separator"></div>
+
+                        <div class="pm-option" style="position: relative;">
+                            <div class="pm-text">
+                                <div class="pm-name disabled" style="margin-left: 32px;">Wallet (₦0.00)</div>
+                            </div>
+                            <div class="add-money" style="display:flex; align-items:center;">Add Money <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+                        </div>
+
+                        <div class="pm-option">
+                            <div class="pm-text">
+                                <div class="pm-name disabled" style="margin-left: 32px; margin-top: 10px;">OWealth (₦5.12)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="add-card-btn">
+                        <span class="plus-icon">+</span> Add a Bank Card / Account
+                    </button>
+                </div>
+
+                <div class="footer">
+                    <button class="pay-btn">Pay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

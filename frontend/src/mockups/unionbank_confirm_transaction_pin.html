@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirm Transaction PIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+  body { background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; min-height: 100vh; align-items: center; }
+  .app-container { width: 375px; height: 812px; background-color: #f8fafc; position: relative; overflow: hidden; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 8px solid #ffffff; }
+  
+  .bg-mock { filter: blur(4px); opacity: 0.6; height: 100%; background: #f8fafc; }
+  .header-mock { background: linear-gradient(135deg, #00A2E8 0%, #006b99 100%); height: 90px; width: 100%; position: absolute; top:0; z-index: 1; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
+  .overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 10; }
+  
+  .modal { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-top-left-radius: 32px; border-top-right-radius: 32px; z-index: 20; padding: 24px 0 40px 0; display: flex; flex-direction: column; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); }
+  
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .modal-indicator { width: 40px; height: 5px; background: #e2e8f0; border-radius: 4px; margin: 0 auto 20px auto; }
+
+  .modal-title { font-size: 18px; font-weight: 600; color: #0f172a; margin-bottom: 24px; padding: 0 24px; text-align: center; }
+  
+  .details-list { border-top: 1px solid rgba(0,0,0,0.04); border-bottom: 1px solid rgba(0,0,0,0.04); margin-bottom: 32px; background: rgba(248, 250, 252, 0.5); }
+  
+  .detail-row { display: flex; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.04); align-items: center; }
+  .detail-row:last-child { border-bottom: none; }
+  
+  .detail-label { font-size: 14px; color: #64748b; font-weight: 500; }
+  .detail-value { font-size: 14px; color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; line-height: 1.4; }
+  .amount-value { font-size: 18px; font-weight: 700; color: #00A2E8; }
+  
+  .pin-section { padding: 0 24px; display: flex; flex-direction: column; align-items: center; }
+  .pin-prompt { font-size: 15px; color: #475569; margin-bottom: 24px; font-weight: 500; }
+  
+  .pin-blocks { display: flex; gap: 16px; }
+  .pin-block { width: 56px; height: 56px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #0f172a; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.2s ease; }
+  .pin-block.filled { border-color: #00A2E8; box-shadow: 0 4px 12px rgba(0, 162, 232, 0.1); }
+  .pin-block.filled::after { content: '•'; font-size: 36px; color: #0f172a; }
+  .pin-block.active { border-color: #00A2E8; box-shadow: 0 0 0 4px rgba(0, 162, 232, 0.1); }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header-mock"></div>
+  <div class="bg-mock"></div>
+  <div class="overlay"></div>
+  
+  <div class="modal">
+    <div class="modal-indicator"></div>
+    <div class="modal-title">Confirm Transaction</div>
+    
+    <div class="details-list">
+      <div class="detail-row">
+        <div class="detail-label">From</div>
+        <div class="detail-value">UNION VIBE TIER 2<br><span style="color:#64748b; font-size:12px; font-weight:400;">0039****33</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">To</div>
+        <div class="detail-value">VALENTINE CHINEDU<br><span style="color:#64748b; font-size:12px; font-weight:400;">UBA • 2000000000</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Amount</div>
+        <div class="detail-value amount-value">₦ 50,000.00</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Fee</div>
+        <div class="detail-value">₦ 10.75</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Description</div>
+        <div class="detail-value">Eye glasses</div>
+      </div>
+    </div>
+    
+    <div class="pin-section">
+      <div class="pin-prompt">Enter your 4-digit PIN</div>
+      <div class="pin-blocks">
+        <div class="pin-block filled"></div>
+        <div class="pin-block filled"></div>
+        <div class="pin-block active"></div>
+        <div class="pin-block"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

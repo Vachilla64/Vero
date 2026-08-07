@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opay - Large Transfer Warning</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #F8F9FA;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 414px;
+            background-color: #F8F9FA;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* In case it's a bottom sheet, but screenshot shows a center modal with X at top right */
+        }
+        
+        .overlay-center {
+            align-items: center;
+        }
+
+        /* Modal */
+        .modal {
+            background-color: #FFFFFF;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            position: absolute;
+            bottom: 0;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Wait, the analysis artifact says "Center modal", but looking at the crop shape of a typical bottom modal. 
+           Wait, looking at opay_large_transfer_warning.jpg it's an overlay that might be a center modal or bottom sheet. 
+           Artifact: "'Large Transfer Detected' center modal... Two buttons at the bottom". 
+           Let's style it as a center modal but filling the screen width with rounded top like a bottom sheet based on typical opay. 
+           Actually, I'll make it a bottom sheet as that's very common, but I will center the content. */
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 20px;
+            color: #757575;
+            cursor: pointer;
+        }
+
+        .warning-icon {
+            width: 48px;
+            height: 48px;
+            background-color: #FF9800;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+        }
+
+        /* Amount Badge */
+        .amount-badge {
+            background-color: #E8F5E9;
+            color: var(--primary-green);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .amount-badge-tooltip {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #616161;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .amount-badge-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 4px 4px 0;
+            border-style: solid;
+            border-color: #616161 transparent transparent transparent;
+        }
+
+        /* Details Card */
+        .details-card {
+            background-color: #F8F9FA;
+            width: 100%;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .details-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #757575;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #1A1A1A;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        /* Warning Text */
+        .warning-text {
+            color: #757575;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        /* Buttons */
+        .buttons-container {
+            display: flex;
+            width: 100%;
+            gap: 16px;
+        }
+
+        .btn-reconfirm {
+            flex: 1;
+            background-color: #E0F2F1;
+            color: var(--primary-green);
+            border: none;
+            border-radius: 25px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-continue {
+            flex: 1;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+    
+        /* Aesthetic Upgrades */
+        :root {
+            --primary-green: #00D09E;
+            --primary-green-dark: #00A37A;
+            --primary-gradient: linear-gradient(135deg, #00D09E 0%, var(--primary-green) 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-green: 0 8px 20px rgba(0, 208, 158, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F4F6F8;
+        }
+
+        .app-container {
+            box-shadow: 0 24px 48px rgba(0,0,0,0.1) !important;
+        }
+
+        button, .tab, .recent-item, .pm-option, .add-card-btn, .preset-btn, .tag-btn {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        button:hover:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(-2px);
+        }
+        
+        button:active:not(:disabled):not(.pay-btn[disabled]) {
+            transform: translateY(0);
+        }
+
+        input {
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            border-bottom-color: var(--primary-green) !important;
+            box-shadow: 0 1px 0 var(--primary-green) !important;
+        }
+        
+        .next-btn, .claim-btn, .btn-continue, .confirm-btn {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .next-btn:hover, .claim-btn:hover, .btn-continue:hover, .confirm-btn:hover {
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .overlay {
+            background-color: rgba(15, 23, 42, 0.4) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .modal {
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.15) !important;
+            border-top: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .form-section, .card, .success-rate, .pm-options, .details-card {
+            box-shadow: var(--shadow-md) !important;
+            border: 1px solid rgba(255,255,255,0.9) !important;
+            background: rgba(255,255,255,0.8) !important;
+            backdrop-filter: blur(20px);
+        }
+        
+        .tab:hover {
+            color: var(--primary-green);
+        }
+        
+        .preset-btn:hover, .tag-btn:hover {
+            background-color: #E8F5E9 !important;
+            color: var(--primary-green-dark) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .pay-btn {
+            transition: var(--transition);
+        }
+        
+        /* Specific override for enabled pay button as per mockup */
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]) {
+            background: var(--primary-gradient) !important;
+            box-shadow: var(--shadow-green) !important;
+        }
+        
+        .pay-btn:not([style*="background-color: #B2DFDB"]):not([disabled]):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 208, 158, 0.4) !important;
+        }
+        
+        .radio-outer {
+            transition: var(--transition);
+        }
+        .pm-option:hover .radio-outer:not(.selected) {
+            border-color: #00D09E;
+        }
+        
+        .recent-item:hover, .pm-option:hover {
+            background-color: #F8FAFC;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background Mockup (Blurred/Darkened) -->
+        <div style="padding: 20px;">
+            <div style="width: 100%; height: 50px; background: #ddd; margin-bottom: 20px; border-radius: 8px;"></div>
+            <div style="width: 100%; height: 200px; background: #eee; border-radius: 16px;"></div>
+        </div>
+
+        <div class="overlay">
+            <div class="modal">
+                <div class="modal-content">
+                    <div class="close-btn" style="display:flex; align-items:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                    
+                    <div class="warning-icon" style="background: #FFF3E0; color: #FF9800; box-shadow: 0 4px 12px rgba(255,152,0,0.2);"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                    <div class="modal-title">Large Transfer Detected</div>
+                    
+                    <div class="amount-badge">
+                        <div class="amount-badge-tooltip">Tens of Thousands</div>
+                        Amount: ₦50,000.00
+                    </div>
+
+                    <div class="details-card">
+                        <div class="details-title">Transaction Details</div>
+                        <div class="detail-row">
+                            <div class="detail-label">Name</div>
+                            <div class="detail-value">VALENTINE CHINEDU ALFRED</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Account No.</div>
+                            <div class="detail-value">2279612300</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Bank</div>
+                            <div class="detail-value">United Bank For Africa</div>
+                        </div>
+                    </div>
+
+                    <div class="warning-text">
+                        You are about to transfer a large sum of money. Please note that successful transfers cannot be reversed.
+                    </div>
+
+                    <div class="buttons-container">
+                        <button class="btn-reconfirm">Reconfirm</button>
+                        <button class="btn-continue">Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

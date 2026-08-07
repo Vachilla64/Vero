@@ -47,3 +47,6 @@ FINALS_DEMO_TASKS.md
 
 # Local tooling
 .claude/
+
+.vercel
+.env*
