@@ -58,7 +58,7 @@ export default function History() {
 
   return (
     <PageWrapper className="bg-canvas min-h-screen">
-      <div className="flex flex-col h-full px-5 pt-12 pb-28 max-w-md mx-auto overflow-y-auto no-scrollbar">
+      <div className="flex flex-col h-full px-5 pt-12 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] max-w-md mx-auto overflow-y-auto no-scrollbar">
         
         {/* Header */}
         <div className="mb-6">

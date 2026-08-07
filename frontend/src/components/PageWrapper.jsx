@@ -30,7 +30,7 @@ export default function PageWrapper({ children, className = "" }) {
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
-      className={twMerge("absolute inset-0 overflow-y-auto overflow-x-hidden pt-16 pb-24 no-scrollbar", className)}
+      className={twMerge("absolute inset-0 overflow-y-auto overflow-x-hidden pt-16 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] no-scrollbar", className)}
     >
       {children}
     </motion.div>

@@ -36,7 +36,7 @@ export default function Tags() {
   };
 
   return (
-    <PageWrapper className="bg-canvas min-h-screen pt-12 pb-28 px-5 overflow-y-auto no-scrollbar">
+    <PageWrapper className="bg-canvas min-h-screen pt-12 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] px-5 overflow-y-auto no-scrollbar">
       {/* Header */}
       <div className="mb-6">
         <div className="font-bold text-[26px] text-ink">Tags</div>

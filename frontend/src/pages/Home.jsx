@@ -267,7 +267,7 @@ export default function Home() {
   // ----------------------------------------------------
   if (!trustData) {
     return (
-      <PageWrapper className="bg-canvas overflow-hidden pt-2 pb-24 relative">
+      <PageWrapper className="bg-canvas overflow-hidden pt-2 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         
         <div className="flex flex-col h-full px-6 relative z-0 overflow-y-auto no-scrollbar">
           
