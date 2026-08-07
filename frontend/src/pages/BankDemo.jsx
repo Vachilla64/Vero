@@ -80,7 +80,7 @@ const FLOWS = {
 };
 
 const SCORE = 94;
-const EXPLANATION = "Repeat recipient — 3 prior transfers to this account, name matches NUBAN records, and no fraud reports on file.";
+const EXPLANATION = "Repeat recipient. 3 prior transfers to this account, name matches NUBAN records, and no fraud reports on file.";
 const TAGS = ["Verified name match", "Repeat recipient", "0 reports"];
 
 /* ───────────────────────────── Nav chrome ───────────────────────────── */
