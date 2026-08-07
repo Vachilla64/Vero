@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -58,24 +58,74 @@ const THEMES = {
 
 const FLOWS = {
   unionbank: [
-    { kind: "mock", html: unionBankTransferHtml },
-    { kind: "vero" },
-    { kind: "mock", html: unionBankPinHtml },
-    { kind: "success" },
+    {
+      kind: "mock",
+      html: unionBankTransferHtml,
+      caption: "This is Union Bank's real transfer screen. Right now, nothing stands between filling this in and the money moving.",
+    },
+    {
+      kind: "vero",
+      caption: "Vero drops in right here, before the money moves. One score, one plain-English reason.",
+    },
+    {
+      kind: "mock",
+      html: unionBankPinHtml,
+      caption: "Vero already gave the green light, so the user just confirms with their PIN like normal. No extra friction for a trusted transfer.",
+    },
+    {
+      kind: "success",
+      caption: "Done. The transfer went through, and it was trust-checked the whole way.",
+    },
   ],
   opay: [
-    { kind: "mock", html: opayRecipientHtml },
-    { kind: "mock", html: opayAmountHtml },
-    { kind: "mock", html: opayWarningHtml },
-    { kind: "vero" },
-    { kind: "mock", html: opayConfirmHtml },
-    { kind: "success" },
+    {
+      kind: "mock",
+      html: opayRecipientHtml,
+      caption: "OPay's real transfer flow. The recipient's account is entered like any other transfer.",
+    },
+    {
+      kind: "mock",
+      html: opayAmountHtml,
+      caption: "₦50,000 is a meaningful amount. This is exactly the moment a scam usually slips through.",
+    },
+    {
+      kind: "mock",
+      html: opayWarningHtml,
+      caption: "OPay's own warning: a generic \"be careful\" with no real signal behind it. It has no idea if this account is actually safe.",
+    },
+    {
+      kind: "vero",
+      caption: "This is where Vero replaces that guesswork. One score, one explanation, before OPay ever asks for a PIN.",
+    },
+    {
+      kind: "mock",
+      html: opayConfirmHtml,
+      caption: "Vero already vouched for this recipient, so the payment confirms normally.",
+    },
+    {
+      kind: "success",
+      caption: "Sent, and verified before it ever left the app.",
+    },
   ],
   uba: [
-    { kind: "mock", html: ubaStep1Html },
-    { kind: "mock", html: ubaStep2Html },
-    { kind: "vero" },
-    { kind: "success" },
+    {
+      kind: "mock",
+      html: ubaStep1Html,
+      caption: "UBA's transfer flow starts the same way every bank's does: pick an account, pick a recipient.",
+    },
+    {
+      kind: "mock",
+      html: ubaStep2Html,
+      caption: "Amount and purpose. Still no risk signal anywhere on screen.",
+    },
+    {
+      kind: "vero",
+      caption: "Vero becomes UBA's actual step 3: a real trust check before the transfer can complete.",
+    },
+    {
+      kind: "success",
+      caption: "Trust-checked, then sent.",
+    },
   ],
 };
 
@@ -109,14 +159,55 @@ function NavChrome({ onBack, onExit, stepIndex, stepCount }) {
   );
 }
 
+/* ───────────────────────────── Narrator caption ───────────────────────────── */
+
+function NarratorCaption({ text, stepIndex, stepCount }) {
+  if (!text) return null;
+  return (
+    <div className="fixed inset-x-0 top-[64px] z-40 flex justify-center px-5 pointer-events-none">
+      <motion.div
+        key={`${stepIndex}-${text}`}
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="max-w-sm w-full bg-ink/90 backdrop-blur text-white rounded-2xl px-4 py-3 shadow-app pointer-events-none"
+      >
+        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">
+          {stepIndex + 1} / {stepCount}
+        </div>
+        <p className="text-[13.5px] font-medium leading-snug">{text}</p>
+      </motion.div>
+    </div>
+  );
+}
+
 /* ───────────────────────────── Mock (bank) screen ───────────────────────────── */
 
+/* Each mockup file ships its own `* { margin: 0; padding: 0; box-sizing:
+   border-box; ... }` universal reset, meant for a page it owns outright.
+   Dropped into the light DOM it leaks everywhere: Tailwind v4 emits its
+   utilities inside a CSS layer, and per spec any unlayered rule (which is
+   exactly what dangerouslySetInnerHTML's plain <style> tag is) beats a
+   layered one regardless of selector specificity — so that bare `*` was
+   silently zeroing out padding/margin on NavChrome, the narrator caption,
+   all of it, any time a mock step was on screen. A shadow root scopes the
+   mockup's CSS to itself in both directions: its `body {}` rule stops
+   reaching the real <body>, and its `*` reset stops reaching our own UI. */
 function MockScreen({ html, onAdvance }) {
+  const hostRef = useRef(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+    root.innerHTML = html;
+  }, [html]);
+
   return (
     <div
+      ref={hostRef}
       className="min-h-screen w-full flex items-center justify-center bg-[#F0F4F8] cursor-pointer"
       onClickCapture={(e) => { e.preventDefault(); onAdvance(); }}
-      dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
@@ -401,6 +492,7 @@ export default function BankDemo() {
   return (
     <div>
       <NavChrome onBack={back} onExit={reset} stepIndex={stepIndex} stepCount={steps.length} />
+      <NarratorCaption text={step.caption} stepIndex={stepIndex} stepCount={steps.length} />
       <div key={`${bank}-${stepIndex}`} className="animate-fade-in">
         {step.kind === "mock" && <MockScreen html={step.html} onAdvance={advance} />}
         {step.kind === "vero" && <VeroCheckScreen theme={theme} onAdvance={advance} />}

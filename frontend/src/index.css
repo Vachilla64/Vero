@@ -14,9 +14,14 @@
      fit whatever's left in normal flow once the mockup's real content sits
      inside a position:absolute overlay — collapsing the whole app to a
      sliver. Giving #root an explicit width keeps it immune to whatever the
-     injected mockup CSS does to body. */
+     injected mockup CSS does to body. Uses 100vw rather than 100% because
+     some of those same mockups also put padding on body (e.g. Union Bank's
+     screens): 100% would resolve against body's padding-shrunk content box,
+     squeezing #root narrower than a mockup's own fixed-pixel-width
+     .app-container and clipping its right edge. 100vw always means the
+     actual viewport, independent of any ancestor's box model. */
   #root {
-    width: 100%;
+    width: 100vw;
   }
   
   /* Hide scrollbar for Chrome, Safari and Opera */
