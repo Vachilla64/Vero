@@ -4,6 +4,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, X } from "lucide-react";
 import { SLIDES, THEME } from "../data/onboardingSlides";
+import { HackxPrompt, BankPickerSheet } from "../components/HackxGate";
+
+const ASKED_KEY = "vero_hackx_prompted";
 
 const slideVariants = {
   initial: { opacity: 0 },
@@ -14,6 +17,8 @@ const slideVariants = {
 export default function Login() {
   const [step, setStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const [showHackx, setShowHackx] = useState(false);
+  const [showBankPick, setShowBankPick] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,10 +31,30 @@ export default function Login() {
   const t = THEME[slide.theme];
 
   useEffect(() => {
-    if (showForm) return;
+    if (showForm || showHackx || showBankPick) return;
     const id = setInterval(() => setStep((s) => (s + 1) % SLIDES.length), 4000);
     return () => clearInterval(id);
-  }, [showForm]);
+  }, [showForm, showHackx, showBankPick]);
+
+  // Most people tapping "Log in" right now are at the hackathon and don't
+  // have an account — ask first so they can jump straight to the bank demo
+  // instead of signing up manually.
+  const dismissHackx = () => {
+    localStorage.setItem(ASKED_KEY, "true");
+    setShowHackx(false);
+    setShowForm(true);
+  };
+
+  const acceptHackx = () => {
+    localStorage.setItem(ASKED_KEY, "true");
+    setShowHackx(false);
+    setShowBankPick(true);
+  };
+
+  const goToBankDemo = (bankId) => {
+    setShowBankPick(false);
+    navigate(`/bank-demo/${bankId}`);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,7 +131,7 @@ export default function Login() {
         </div>
 
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowHackx(true)}
           className={`w-full font-bold text-[16px] py-[18px] rounded-full active:scale-[0.98] transition-all ${t.button}`}
         >
           Log in
@@ -205,6 +230,9 @@ export default function Login() {
           </>
         )}
       </AnimatePresence>
+
+      <HackxPrompt open={showHackx} onYes={acceptHackx} onNo={dismissHackx} />
+      <BankPickerSheet open={showBankPick} onClose={() => { setShowBankPick(false); setShowForm(true); }} onPick={goToBankDemo} />
     </div>
   );
 }
